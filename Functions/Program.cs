@@ -11,6 +11,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 
 namespace Quizz.Functions
 {
+    // Deployment test - forcing redeploy with proper settings
     public class Program
     {
         public static void Main()
