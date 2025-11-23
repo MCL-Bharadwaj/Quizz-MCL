@@ -19,6 +19,21 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
+      
+      - name: Debug - Check Environment
+        run: |
+          echo "=== Build Environment Debug ==="
+          echo "Working Directory: $(pwd)"
+          echo ".NET SDK Version: $(dotnet --version)"
+          echo "Repository: ${{ github.repository }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Event: ${{ github.event_name }}"
+          echo ""
+          echo "=== Checking Functions Directory ==="
+          ls -la ./Functions || echo "Functions directory not found"
+          echo ""
+          echo "=== Checking Functions.csproj ==="
+          cat ./Functions/Functions.csproj || echo "Functions.csproj not found"
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
@@ -27,6 +42,14 @@ jobs:
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
         working-directory: ./Functions
+      
+      - name: Debug - Check Published Files
+        run: |
+          echo "=== Published Files ==="
+          ls -la ${{env.DOTNET_ROOT}}/myapp
+          echo ""
+          echo "=== Checking for DLL files ==="
+          find ${{env.DOTNET_ROOT}}/myapp -name "*.dll" | head -10
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -47,6 +70,14 @@ jobs:
         with:
           name: .net-app
       
+      - name: Debug - Check Downloaded Artifact
+        run: |
+          echo "=== Downloaded Artifact Contents ==="
+          ls -la .
+          echo ""
+          echo "=== Checking for Functions DLL ==="
+          find . -name "*.dll" | head -10
+      
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -61,3 +92,11 @@ jobs:
           app-name: 'quizz'
           slot-name: 'Production'
           package: .
+      
+      - name: Debug - Deployment Result
+        if: always()
+        run: |
+          echo "=== Deployment Status ==="
+          echo "Deployment outcome: ${{ steps.deploy-to-webapp.outcome }}"
+          echo "App URL: https://quizz-huejbxd2dpaccbb0.westus3-01.azurewebsites.net"
+          echo "Deployment ID: ${{ steps.deploy-to-webapp.outputs.webapp-url }}"
