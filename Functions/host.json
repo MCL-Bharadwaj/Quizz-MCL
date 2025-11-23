@@ -28,7 +28,7 @@
   },
   "cors": {
     "allowedOrigins": [
-      "https://black-bush-0d3fb621e.3.azurestaticapps.net"
+      "https://agreeable-sky-055d7961e.3.azurestaticapps.net"
     ],
     "supportCredentials": true
   }
