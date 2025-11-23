@@ -666,11 +666,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Quizz\\Auth\\Auth.csproj",
+      "projectUniqueName": "C:\\Quizz-MCL\\Auth\\Auth.csproj",
       "projectName": "Auth",
-      "projectPath": "C:\\Quizz\\Auth\\Auth.csproj",
+      "projectPath": "C:\\Quizz-MCL\\Auth\\Auth.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-      "outputPath": "C:\\Quizz\\Auth\\obj\\",
+      "outputPath": "C:\\Quizz-MCL\\Auth\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -685,11 +685,11 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Quizz\\DataAccess\\DataAccess.csproj": {
-              "projectPath": "C:\\Quizz\\DataAccess\\DataAccess.csproj"
+            "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj": {
+              "projectPath": "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj"
             },
-            "C:\\Quizz\\DataModel\\DataModel.csproj": {
-              "projectPath": "C:\\Quizz\\DataModel\\DataModel.csproj"
+            "C:\\Quizz-MCL\\DataModel\\DataModel.csproj": {
+              "projectPath": "C:\\Quizz-MCL\\DataModel\\DataModel.csproj"
             }
           }
         }

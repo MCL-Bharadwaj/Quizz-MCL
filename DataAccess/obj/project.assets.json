@@ -305,11 +305,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Quizz\\DataAccess\\DataAccess.csproj",
+      "projectUniqueName": "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj",
       "projectName": "DataAccess",
-      "projectPath": "C:\\Quizz\\DataAccess\\DataAccess.csproj",
+      "projectPath": "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj",
       "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-      "outputPath": "C:\\Quizz\\DataAccess\\obj\\",
+      "outputPath": "C:\\Quizz-MCL\\DataAccess\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -324,8 +324,8 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "projectReferences": {
-            "C:\\Quizz\\DataModel\\DataModel.csproj": {
-              "projectPath": "C:\\Quizz\\DataModel\\DataModel.csproj"
+            "C:\\Quizz-MCL\\DataModel\\DataModel.csproj": {
+              "projectPath": "C:\\Quizz-MCL\\DataModel\\DataModel.csproj"
             }
           }
         }

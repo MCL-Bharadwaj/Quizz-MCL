@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Quizz\\DataAccess\\DataAccess.csproj": {}
+    "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj": {}
   },
   "projects": {
-    "C:\\Quizz\\DataAccess\\DataAccess.csproj": {
+    "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Quizz\\DataAccess\\DataAccess.csproj",
+        "projectUniqueName": "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj",
         "projectName": "DataAccess",
-        "projectPath": "C:\\Quizz\\DataAccess\\DataAccess.csproj",
+        "projectPath": "C:\\Quizz-MCL\\DataAccess\\DataAccess.csproj",
         "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-        "outputPath": "C:\\Quizz\\DataAccess\\obj\\",
+        "outputPath": "C:\\Quizz-MCL\\DataAccess\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -26,8 +26,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Quizz\\DataModel\\DataModel.csproj": {
-                "projectPath": "C:\\Quizz\\DataModel\\DataModel.csproj"
+              "C:\\Quizz-MCL\\DataModel\\DataModel.csproj": {
+                "projectPath": "C:\\Quizz-MCL\\DataModel\\DataModel.csproj"
               }
             }
           }
@@ -77,14 +77,14 @@
         }
       }
     },
-    "C:\\Quizz\\DataModel\\DataModel.csproj": {
+    "C:\\Quizz-MCL\\DataModel\\DataModel.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Quizz\\DataModel\\DataModel.csproj",
+        "projectUniqueName": "C:\\Quizz-MCL\\DataModel\\DataModel.csproj",
         "projectName": "DataModel",
-        "projectPath": "C:\\Quizz\\DataModel\\DataModel.csproj",
+        "projectPath": "C:\\Quizz-MCL\\DataModel\\DataModel.csproj",
         "packagesPath": "C:\\Users\\USER\\.nuget\\packages\\",
-        "outputPath": "C:\\Quizz\\DataModel\\obj\\",
+        "outputPath": "C:\\Quizz-MCL\\DataModel\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\USER\\AppData\\Roaming\\NuGet\\NuGet.Config"
