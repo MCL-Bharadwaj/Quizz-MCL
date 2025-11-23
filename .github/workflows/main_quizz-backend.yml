@@ -33,7 +33,7 @@ jobs:
         shell: pwsh
         run: |
           pushd './Functions'
-          dotnet build --configuration Release --output ./output
+          dotnet publish --configuration Release --output ./output
           popd
       
       - name: Login to Azure
