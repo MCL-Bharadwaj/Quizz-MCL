@@ -16,6 +16,19 @@ namespace Quizz.Functions
     {
         public static void Main()
         {
+            try
+            {
+                Console.WriteLine("========================================");
+                Console.WriteLine($"[{DateTime.UtcNow}] Starting Quizz Function App...");
+                Console.WriteLine($"Environment: {Environment.GetEnvironmentVariable("AZURE_FUNCTIONS_ENVIRONMENT")}");
+                Console.WriteLine($"Worker Runtime: {Environment.GetEnvironmentVariable("FUNCTIONS_WORKER_RUNTIME")}");
+                Console.WriteLine("========================================");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR in startup logging: {ex.Message}");
+            }
+
             var host = new HostBuilder()
                 .ConfigureFunctionsWorkerDefaults(app =>
                 {
@@ -24,17 +37,26 @@ namespace Quizz.Functions
                 })
                 .ConfigureServices((context, services) =>
                 {
-                    // Get configuration
-                    var configuration = context.Configuration;
-                    var connectionString = configuration["PostgresConnectionString"] 
-                        ?? Environment.GetEnvironmentVariable("PostgresConnectionString");
-
-                    if (string.IsNullOrEmpty(connectionString))
+                    try
                     {
-                        throw new InvalidOperationException(
-                            "PostgresConnectionString not found in configuration. " +
-                            "Set it in local.settings.json or Azure App Settings.");
-                    }
+                        Console.WriteLine($"[{DateTime.UtcNow}] Configuring services...");
+                        
+                        // Get configuration
+                        var configuration = context.Configuration;
+                        Console.WriteLine($"[{DateTime.UtcNow}] Configuration retrieved");
+                        
+                        var connectionString = configuration["PostgresConnectionString"] 
+                            ?? Environment.GetEnvironmentVariable("PostgresConnectionString");
+
+                        Console.WriteLine($"[{DateTime.UtcNow}] Connection string present: {!string.IsNullOrEmpty(connectionString)}");
+
+                        if (string.IsNullOrEmpty(connectionString))
+                        {
+                            Console.WriteLine($"[{DateTime.UtcNow}] ERROR: PostgresConnectionString not found!");
+                            throw new InvalidOperationException(
+                                "PostgresConnectionString not found in configuration. " +
+                                "Set it in local.settings.json or Azure App Settings.");
+                        }
 
                     // Register application services
                     services.AddDbService(connectionString);
