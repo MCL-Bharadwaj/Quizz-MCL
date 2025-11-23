@@ -58,16 +58,29 @@ namespace Quizz.Functions
                                 "Set it in local.settings.json or Azure App Settings.");
                         }
 
-                    // Register application services
-                    services.AddDbService(connectionString);
-                    services.AddApiKeyAuthentication();
+                        // Register application services
+                        Console.WriteLine($"[{DateTime.UtcNow}] Registering DbService...");
+                        services.AddDbService(connectionString);
+                        
+                        Console.WriteLine($"[{DateTime.UtcNow}] Registering API Key Authentication...");
+                        services.AddApiKeyAuthentication();
 
-                    // Register AuthService for JWT authentication
-                    services.AddSingleton<Quizz.Auth.AuthService>();
+                        Console.WriteLine($"[{DateTime.UtcNow}] Registering AuthService...");
+                        services.AddSingleton<Quizz.Auth.AuthService>();
 
-                    // Add application insights (optional)
-                    services.AddApplicationInsightsTelemetryWorkerService();
-                    services.ConfigureFunctionsApplicationInsights();
+                        Console.WriteLine($"[{DateTime.UtcNow}] Adding Application Insights...");
+                        services.AddApplicationInsightsTelemetryWorkerService();
+                        services.ConfigureFunctionsApplicationInsights();
+                        
+                        Console.WriteLine($"[{DateTime.UtcNow}] Service configuration completed successfully");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow}] FATAL ERROR in ConfigureServices: {ex.GetType().Name}");
+                        Console.WriteLine($"Message: {ex.Message}");
+                        Console.WriteLine($"Stack: {ex.StackTrace}");
+                        throw;
+                    }
                 })
                 .Build();
 
