@@ -32,7 +32,7 @@ jobs:
       - name: 'Resolve Project Dependencies Using Dotnet'
         shell: bash
         run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+          pushd './Functions'
           dotnet build --configuration Release --output ./output
           popd
       
@@ -49,5 +49,5 @@ jobs:
         with:
           app-name: 'Quizz-backend'
           slot-name: 'Production'
-          package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+          package: 'Functions/output'
           
