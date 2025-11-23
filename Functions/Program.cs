@@ -69,7 +69,7 @@ namespace Quizz.Functions
                 if (response != null)
                 {
                     // Allow your Static Web App domain
-                    response.Headers.Add("Access-Control-Allow-Origin", "https://black-bush-0d3fb621e.3.azurestaticapps.net");
+                    response.Headers.Add("Access-Control-Allow-Origin", "https://agreeable-sky-055d7961e.3.azurestaticapps.net");
                     response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
                     response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
                     response.Headers.Add("Access-Control-Allow-Credentials", "true");
