@@ -14,22 +14,9 @@
       "Microsoft.Azure.WebJobs.Script.WebHost.Diagnostics.SystemLoggerProvider": "Information"
     }
   },
-  "extensionBundle": {
-    "id": "Microsoft.Azure.Functions.ExtensionBundle",
-    "version": "[4.*, 5.0.0)"
-  },
   "extensions": {
     "http": {
       "routePrefix": "api"
     }
-  },
-  "customHandler": {
-    "enableForwardingHttpRequest": true
-  },
-  "cors": {
-    "allowedOrigins": [
-      "https://agreeable-sky-055d7961e.3.azurestaticapps.net"
-    ],
-    "supportCredentials": true
   }
 }
