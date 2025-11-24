@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle, XCircle, ArrowLeft, Clock, Award } from 'lucide-react';
 import { attemptApi, quizApi, helpers } from '../../services/api';
+import { QuestionText } from '../../components/CodeBlock';
 
 const AttemptDetails = ({ isDark }) => {
   const { attemptId } = useParams();
@@ -519,9 +520,11 @@ const QuestionReviewCard = ({ question, response, index, isDark }) => {
               {isCorrect ? 'Correct' : 'Incorrect'}
             </span>
           </div>
-          <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
-            {question.questionText}
-          </h3>
+          <QuestionText 
+            text={question.questionText}
+            isDark={isDark}
+            className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
+          />
         </div>
         <div className="text-right">
           <div className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>

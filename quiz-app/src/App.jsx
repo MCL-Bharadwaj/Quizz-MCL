@@ -20,6 +20,8 @@ import GradeAttempts from './pages/Tutor/GradeAttempts';
 import CreatorDashboard from './pages/ContentCreator/CreatorDashboard';
 import CreatorQuizzes from './pages/ContentCreator/CreatorQuizzes';
 import CreatorCreateQuiz from './pages/ContentCreator/CreatorCreateQuiz';
+import CreatorLevelQuizzes from './pages/ContentCreator/CreatorLevelQuizzes';
+import CreatorManageQuestions from './pages/ContentCreator/CreatorManageQuestions';
 
 // Landing Page
 import RoleSelector from './pages/RoleSelector';
@@ -93,6 +95,8 @@ function App() {
                 <Route path="/dashboard" element={<CreatorDashboard isDark={isDark} />} />
                 <Route path="/quizzes" element={<CreatorQuizzes isDark={isDark} />} />
                 <Route path="/quiz/create" element={<CreatorCreateQuiz isDark={isDark} />} />
+                <Route path="/level/:levelId/quizzes" element={<CreatorLevelQuizzes isDark={isDark} />} />
+                <Route path="/quiz/:quizId/questions" element={<CreatorManageQuestions isDark={isDark} />} />
               </Routes>
             </main>
           </div>

@@ -132,6 +132,17 @@ export const questionApi = {
     }
   },
 
+  // Update a question
+  updateQuestion: async (questionId, questionData) => {
+    try {
+      const response = await apiClient.put(`/questions/${questionId}`, questionData);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating question:', error);
+      throw error;
+    }
+  },
+
   // Delete a question
   deleteQuestion: async (questionId) => {
     try {
@@ -139,6 +150,20 @@ export const questionApi = {
       return response.data;
     } catch (error) {
       console.error('Error deleting question:', error);
+      throw error;
+    }
+  },
+
+  // Add a question to a quiz
+  addQuestionToQuiz: async (quizId, questionId, position = null) => {
+    try {
+      const response = await apiClient.post(`/quizzes/${quizId}/questions`, {
+        questionId,
+        position,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error adding question to quiz:', error);
       throw error;
     }
   },

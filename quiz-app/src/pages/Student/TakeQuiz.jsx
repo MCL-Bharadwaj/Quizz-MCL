@@ -4,6 +4,7 @@ import { Loader2, CheckCircle, XCircle, Clock, AlertCircle, ChevronRight, Chevro
 import { quizApi, attemptApi, responseApi, helpers } from '../../services/api';
 import OrderingQuestion from '../../components/QuestionTypes/OrderingQuestion';
 import MatchingQuestion from '../../components/QuestionTypes/MatchingQuestion';
+import { QuestionText } from '../../components/CodeBlock';
 
 // Helper function to shuffle array
 const shuffleArray = (array) => {
@@ -288,9 +289,13 @@ const TakeQuiz = ({ isDark }) => {
       <div className={`rounded-2xl ${isDark ? 'bg-gray-800' : 'bg-white'} p-8 shadow-lg mb-6`}>
         <div className="mb-6">
           <div className="flex items-start justify-between mb-4">
-            <h2 className={`text-2xl font-bold flex-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {currentQuestion.questionText}
-            </h2>
+            <div className="flex-1">
+              <QuestionText 
+                text={currentQuestion.questionText}
+                isDark={isDark}
+                className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}
+              />
+            </div>
             <span className={`px-3 py-1 rounded-lg text-sm font-medium ${isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>
               {currentQuestion.points} points
             </span>

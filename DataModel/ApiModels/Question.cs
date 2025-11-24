@@ -146,3 +146,15 @@ public class UpdateQuestionRequest : CreateQuestionRequest
     [JsonPropertyName("questionId")]
     public Guid QuestionId { get; set; }
 }
+
+/// <summary>
+/// Add question to quiz request
+/// </summary>
+public class AddQuestionToQuizRequest
+{
+    [JsonPropertyName("questionId")]
+    public Guid QuestionId { get; set; }
+
+    [JsonPropertyName("position")]
+    public int? Position { get; set; }
+}
