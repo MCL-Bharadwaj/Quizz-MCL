@@ -7,6 +7,7 @@ import StudentDashboard from './pages/Student/StudentDashboard';
 import StudentQuizzes from './pages/Student/StudentQuizzes';
 import TakeQuiz from './pages/Student/TakeQuiz';
 import StudentAttempts from './pages/Student/StudentAttempts';
+import AttemptDetails from './pages/Student/AttemptDetails';
 
 // Tutor Pages
 import TutorDashboard from './pages/Tutor/TutorDashboard';
@@ -59,6 +60,7 @@ function App() {
                 <Route path="/quizzes" element={<StudentQuizzes isDark={isDark} />} />
                 <Route path="/quiz/:quizId" element={<TakeQuiz isDark={isDark} />} />
                 <Route path="/attempts" element={<StudentAttempts isDark={isDark} />} />
+                <Route path="/attempt/:attemptId" element={<AttemptDetails isDark={isDark} />} />
               </Routes>
             </main>
           </div>
