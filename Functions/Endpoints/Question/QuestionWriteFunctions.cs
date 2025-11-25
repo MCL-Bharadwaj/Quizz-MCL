@@ -343,6 +343,8 @@ namespace Quizz.Functions.Endpoints.Question
                     }
                 }
 
+                _logger.LogInformation($"Adding question {request.QuestionId} to quiz {quizId} at position {position}");
+
                 // Add question to quiz
                 var sql = @"
                     INSERT INTO quiz.quiz_questions (quiz_id, question_id, position)
@@ -358,6 +360,7 @@ namespace Quizz.Functions.Endpoints.Question
 
                 if (!await reader.ReadAsync())
                 {
+                    _logger.LogError($"Failed to insert/update question {request.QuestionId} in quiz {quizId}");
                     return await ResponseHelper.InternalServerErrorAsync(req, "Failed to add question to quiz");
                 }
 
@@ -369,7 +372,7 @@ namespace Quizz.Functions.Endpoints.Question
                     message = "Question successfully added to quiz"
                 };
 
-                _logger.LogInformation($"Added question {request.QuestionId} to quiz {quizId} at position {position} in {stopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation($"Successfully added question {request.QuestionId} to quiz {quizId} at position {position} in {stopwatch.ElapsedMilliseconds}ms");
                 return await ResponseHelper.CreatedAsync(req, result, $"/api/quizzes/{quizId}/questions");
             }
             catch (Npgsql.PostgresException ex) when (ex.SqlState == "23505")

@@ -85,6 +85,8 @@ namespace Quizz.Functions.Endpoints.Response
                 var responseId = Guid.NewGuid();
                 var answerJson = JsonSerializer.Serialize(request.AnswerPayload);
 
+                _logger.LogInformation($"Processing answer submission: responseId={responseId}, attemptId={request.AttemptId}, questionId={request.QuestionId}");
+
                 // Fetch the correct answer AND points from questions table for auto-grading
                 // SECURITY: Don't trust points from frontend - always fetch from database
                 var questionSql = @"
@@ -176,7 +178,7 @@ namespace Quizz.Functions.Endpoints.Response
                 //     await AuthHelper.LogSuccessfulUsageAsync(req, _apiKeyService, validation.ApiKey.ApiKeyId, "SubmitAnswer", 201, stopwatch);
                 // }
 
-                _logger.LogInformation($"Submitted answer {responseId} in {stopwatch.ElapsedMilliseconds}ms");
+                _logger.LogInformation($"Submitted answer {responseId} for attempt {request.AttemptId} in {stopwatch.ElapsedMilliseconds}ms");
                 return await ResponseHelper.CreatedAsync(req, response, $"/api/responses/{responseId}");
             }
             catch (Exception ex)

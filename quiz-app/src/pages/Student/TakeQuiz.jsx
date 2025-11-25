@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Loader2, CheckCircle, XCircle, Clock, AlertCircle, ChevronRight, ChevronLeft } from 'lucide-react';
 import { quizApi, attemptApi, responseApi, helpers } from '../../services/api';
@@ -31,6 +31,7 @@ const TakeQuiz = ({ isDark }) => {
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState(null);
   const [attemptCreated, setAttemptCreated] = useState(false);
+  const attemptCreationInProgress = useRef(false);
 
   useEffect(() => {
     // Only load quiz data, don't create attempt yet
@@ -79,21 +80,39 @@ const TakeQuiz = ({ isDark }) => {
   const ensureAttemptCreated = async () => {
     // Only create attempt if user actually starts answering
     if (attemptId || attemptCreated) {
+      console.log('[ensureAttemptCreated] Attempt already exists:', attemptId);
+      return attemptId;
+    }
+
+    // Prevent duplicate creation due to concurrent calls
+    if (attemptCreationInProgress.current) {
+      console.log('[ensureAttemptCreated] Attempt creation already in progress, waiting...');
+      // Wait for the in-progress creation to complete
+      let waitCount = 0;
+      while (attemptCreationInProgress.current && waitCount < 50) { // Max 5 seconds
+        await new Promise(resolve => setTimeout(resolve, 100));
+        waitCount++;
+      }
+      console.log('[ensureAttemptCreated] Wait complete, returning attemptId:', attemptId);
       return attemptId;
     }
 
     try {
-      console.log('Creating new attempt for first interaction...');
+      attemptCreationInProgress.current = true;
+      console.log('[ensureAttemptCreated] Creating new attempt for quiz:', quizId, 'user:', userId);
       const attempt = await attemptApi.startAttempt(quizId, userId, {
         startedAt: new Date().toISOString(),
       });
       setAttemptId(attempt.attemptId);
       setAttemptCreated(true);
-      console.log('Created new attempt:', attempt.attemptId);
+      console.log('[ensureAttemptCreated] ✓ Created new attempt:', attempt.attemptId);
       return attempt.attemptId;
     } catch (error) {
-      console.error('Error creating attempt:', error);
+      console.error('[ensureAttemptCreated] ✗ Error creating attempt:', error);
       throw error;
+    } finally {
+      attemptCreationInProgress.current = false;
+      console.log('[ensureAttemptCreated] Released creation lock');
     }
   };
 
@@ -122,15 +141,18 @@ const TakeQuiz = ({ isDark }) => {
     try {
       // Ensure attempt is created before submitting answer
       const currentAttemptId = await ensureAttemptCreated();
+      console.log('[submitAnswer] Using attemptId:', currentAttemptId, 'for question:', questionId);
       
       const question = questions.find(q => q.questionId === questionId);
       const preparedAnswer = prepareAnswerForSubmission(question, answerData);
       
       if (preparedAnswer !== null) {
+        console.log('[submitAnswer] Submitting answer to backend...');
         await responseApi.submitAnswer(currentAttemptId, questionId, preparedAnswer, points);
+        console.log('[submitAnswer] ✓ Answer submitted successfully');
       }
     } catch (error) {
-      console.error('Error submitting answer:', error);
+      console.error('[submitAnswer] ✗ Error submitting answer:', error);
     }
   };
 
@@ -164,7 +186,9 @@ const TakeQuiz = ({ isDark }) => {
       // Ensure attempt exists before completing
       const currentAttemptId = await ensureAttemptCreated();
       
-      console.log('Submitting quiz with attempt ID:', currentAttemptId);
+      console.log('[handleSubmitQuiz] ========== SUBMITTING QUIZ ==========');
+      console.log('[handleSubmitQuiz] Current attemptId:', currentAttemptId);
+      console.log('[handleSubmitQuiz] State attemptId:', attemptId);
 
       if (!currentAttemptId) {
         throw new Error('No attempt ID available');
@@ -174,17 +198,19 @@ const TakeQuiz = ({ isDark }) => {
       const currentQuestion = questions[currentQuestionIndex];
       const answerData = answers[currentQuestion.questionId];
       if (answerData) {
+        console.log('[handleSubmitQuiz] Submitting final answer for question:', currentQuestion.questionId);
         await submitAnswer(currentQuestion.questionId, answerData, currentQuestion.points);
       }
 
       // Complete attempt
-      console.log('Calling completeAttempt for:', currentAttemptId);
+      console.log('[handleSubmitQuiz] Calling completeAttempt for:', currentAttemptId);
       const completedAttempt = await attemptApi.completeAttempt(currentAttemptId);
-      console.log('Attempt completed successfully:', completedAttempt);
+      console.log('[handleSubmitQuiz] ✓ Attempt completed:', completedAttempt);
+      console.log('[handleSubmitQuiz] Score:', completedAttempt.totalScore, '/', completedAttempt.maxPossibleScore, '=', completedAttempt.scorePercentage, '%');
       setResult(completedAttempt);
       setSubmitted(true);
     } catch (error) {
-      console.error('Error submitting quiz:', error);
+      console.error('[handleSubmitQuiz] ✗ Error submitting quiz:', error);
       alert('Failed to submit quiz. Please try again.');
     } finally {
       setSubmitting(false);

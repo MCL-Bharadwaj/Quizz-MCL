@@ -15,6 +15,11 @@ import TutorQuizzes from './pages/Tutor/TutorQuizzes';
 import CreateQuiz from './pages/Tutor/CreateQuiz';
 import ManageQuestions from './pages/Tutor/ManageQuestions';
 import GradeAttempts from './pages/Tutor/GradeAttempts';
+import TutorLevelClasses from './pages/Tutor/TutorLevelClasses';
+import TutorClassQuizzes from './pages/Tutor/TutorClassQuizzes';
+import TutorQuizStudents from './pages/Tutor/TutorQuizStudents';
+import TutorQuizReview from './pages/Tutor/TutorQuizReview';
+import TutorAssignedQuizzes from './pages/Tutor/TutorAssignedQuizzes';
 
 // Content Creator Pages
 import CreatorDashboard from './pages/ContentCreator/CreatorDashboard';
@@ -80,6 +85,13 @@ function App() {
                 <Route path="/quiz/create" element={<CreateQuiz isDark={isDark} />} />
                 <Route path="/quiz/:quizId/questions" element={<ManageQuestions isDark={isDark} />} />
                 <Route path="/grading" element={<GradeAttempts isDark={isDark} />} />
+                
+                {/* New Tutor Dashboard Navigation Routes (Quiz-Centric) */}
+                <Route path="/level/:levelId/classes" element={<TutorLevelClasses isDark={isDark} />} />
+                <Route path="/level/:levelId/class/:classId/quizzes" element={<TutorClassQuizzes isDark={isDark} />} />
+                <Route path="/level/:levelId/class/:classId/quiz/:quizId/students" element={<TutorQuizStudents isDark={isDark} />} />
+                <Route path="/attempt/:attemptId/review" element={<TutorQuizReview isDark={isDark} />} />
+                <Route path="/assigned-quizzes" element={<TutorAssignedQuizzes isDark={isDark} />} />
               </Routes>
             </main>
           </div>

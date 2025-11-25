@@ -331,17 +331,32 @@ const QuestionForm = ({ quizId, question, isDark, onClose, onSave }) => {
       let savedQuestion;
       if (question) {
         // Update existing question
+        console.log('[QuestionForm] Updating question:', question.questionId);
         savedQuestion = await questionApi.updateQuestion(question.questionId, formData);
+        console.log('[QuestionForm] Question updated:', savedQuestion);
       } else {
         // Create new question
+        console.log('[QuestionForm] Creating question for quiz:', quizId);
         savedQuestion = await questionApi.createQuestion(formData);
+        console.log('[QuestionForm] Question created:', savedQuestion);
+        
         // Add question to quiz
-        await questionApi.addQuestionToQuiz(quizId, savedQuestion.questionId);
+        console.log('[QuestionForm] Adding question to quiz:', {
+          quizId,
+          questionId: savedQuestion.questionId
+        });
+        const linkResult = await questionApi.addQuestionToQuiz(quizId, savedQuestion.questionId);
+        console.log('[QuestionForm] Question linked to quiz:', linkResult);
       }
       onSave();
     } catch (error) {
-      console.error('Error saving question:', error);
-      alert('Failed to save question');
+      console.error('[QuestionForm] Error saving question:', error);
+      console.error('[QuestionForm] Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      alert(`Failed to save question: ${error.response?.data?.message || error.message}`);
     } finally {
       setLoading(false);
     }
