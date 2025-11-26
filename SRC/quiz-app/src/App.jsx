@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Sidebar from './components/Sidebar';
+
+// Auth Pages
+import LoginPage from './pages/Auth/LoginPage';
+import RegisterPage from './pages/Auth/RegisterPage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
+import VerifyEmailPage from './pages/Auth/VerifyEmailPage';
 
 // Player Pages
 import PlayerDashboard from './pages/Player/PlayerDashboard';
@@ -38,48 +47,65 @@ function App() {
   const toggleTheme = () => setIsDark(!isDark);
 
   return (
-    <Router>
-      <Routes>
-        {/* Landing Page - Role Selection */}
-        <Route path="/" element={<RoleSelector isDark={isDark} toggleTheme={toggleTheme} />} />
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Authentication Routes */}
+          <Route path="/login" element={<LoginPage isDark={isDark} toggleTheme={toggleTheme} />} />
+          <Route path="/register" element={<RegisterPage isDark={isDark} toggleTheme={toggleTheme} />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage isDark={isDark} toggleTheme={toggleTheme} />} />
+          <Route path="/reset-password" element={<ResetPasswordPage isDark={isDark} toggleTheme={toggleTheme} />} />
+          <Route path="/verify-email" element={<VerifyEmailPage isDark={isDark} toggleTheme={toggleTheme} />} />
 
-        {/* Player ROUTES */}
-        <Route path="/Player/*" element={
-          <div className={`flex h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-            <Sidebar isDark={isDark} toggleTheme={toggleTheme} role="Player" />
-            <main className="flex-1 overflow-auto">
-              <Routes>
-                <Route path="/" element={<Navigate to="/Player/dashboard" replace />} />
-                <Route path="/dashboard" element={<PlayerDashboard isDark={isDark} />} />
-                <Route path="/quizzes" element={<PlayerQuizzes isDark={isDark} />} />
-                <Route path="/quiz/:quizId" element={<TakeQuiz isDark={isDark} />} />
-                <Route path="/attempts" element={<PlayerAttempts isDark={isDark} />} />
-                <Route path="/attempt/:attemptId" element={<AttemptDetails isDark={isDark} />} />
-              </Routes>
-            </main>
-          </div>
-        } />
+          {/* Landing Page - Role Selection (Protected) */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <RoleSelector isDark={isDark} toggleTheme={toggleTheme} />
+            </ProtectedRoute>
+          } />
 
-        {/* Content Creator ROUTES */}
-        <Route path="/creator/*" element={
-          <div className={`flex h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-            <Sidebar isDark={isDark} toggleTheme={toggleTheme} role="creator" />
-            <main className="flex-1 overflow-auto">
-              <Routes>
-                <Route path="/" element={<Navigate to="/creator/dashboard" replace />} />
-                <Route path="/dashboard" element={<CreatorDashboard isDark={isDark} />} />
-                <Route path="/quizzes" element={<CreatorQuizzes isDark={isDark} />} />
-                <Route path="/quiz/create" element={<CreatorCreateQuiz isDark={isDark} />} />
-                <Route path="/quiz/:quizId/questions" element={<CreatorManageQuestions isDark={isDark} />} />
-              </Routes>
-            </main>
-          </div>
-        } />
+          {/* Player ROUTES (Protected) */}
+          <Route path="/Player/*" element={
+            <ProtectedRoute>
+              <div className={`flex h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+                <Sidebar isDark={isDark} toggleTheme={toggleTheme} role="Player" />
+                <main className="flex-1 overflow-auto">
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/Player/dashboard" replace />} />
+                    <Route path="/dashboard" element={<PlayerDashboard isDark={isDark} />} />
+                    <Route path="/quizzes" element={<PlayerQuizzes isDark={isDark} />} />
+                    <Route path="/quiz/:quizId" element={<TakeQuiz isDark={isDark} />} />
+                    <Route path="/attempts" element={<PlayerAttempts isDark={isDark} />} />
+                    <Route path="/attempt/:attemptId" element={<AttemptDetails isDark={isDark} />} />
+                  </Routes>
+                </main>
+              </div>
+            </ProtectedRoute>
+          } />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* Content Creator ROUTES (Protected) */}
+          <Route path="/creator/*" element={
+            <ProtectedRoute>
+              <div className={`flex h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+                <Sidebar isDark={isDark} toggleTheme={toggleTheme} role="creator" />
+                <main className="flex-1 overflow-auto">
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/creator/dashboard" replace />} />
+                    <Route path="/dashboard" element={<CreatorDashboard isDark={isDark} />} />
+                    <Route path="/quizzes" element={<CreatorQuizzes isDark={isDark} />} />
+                    <Route path="/quiz/create" element={<CreatorCreateQuiz isDark={isDark} />} />
+                    <Route path="/quiz/:quizId/questions" element={<CreatorManageQuestions isDark={isDark} />} />
+                  </Routes>
+                </main>
+              </div>
+            </ProtectedRoute>
+          } />
+
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }
 
