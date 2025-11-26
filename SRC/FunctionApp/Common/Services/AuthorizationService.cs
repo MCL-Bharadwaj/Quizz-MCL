@@ -1,6 +1,6 @@
 using System.Net;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.AspNetCore.Mvc;
+using Quizz.Common.Extensions;
 
 namespace Quizz.Common.Services;
 
@@ -21,27 +21,13 @@ public class AuthResult
     /// <summary>
     /// Check if user has Administrator role
     /// </summary>
-    public bool IsAdministrator => Roles.Contains("Administrator", StringComparer.OrdinalIgnoreCase);
+    public bool IsAdministrator => Roles.Contains("Administrator", StringComparer.OrdinalIgnoreCase) 
+        || Roles.Contains("admin", StringComparer.OrdinalIgnoreCase);
     
     /// <summary>
-    /// Check if user has Tutors role
+    /// Check if user has Player role
     /// </summary>
-    public bool IsTutor => Roles.Contains("Tutors", StringComparer.OrdinalIgnoreCase);
-    
-    /// <summary>
-    /// Check if user has Student role
-    /// </summary>
-    public bool IsStudent => Roles.Contains("Student", StringComparer.OrdinalIgnoreCase);
-    
-    /// <summary>
-    /// Check if user has Parent role
-    /// </summary>
-    public bool IsParent => Roles.Contains("Parent", StringComparer.OrdinalIgnoreCase);
-    
-    /// <summary>
-    /// Check if user has Content Creator role
-    /// </summary>
-    public bool IsContentCreator => Roles.Contains("Content Creator", StringComparer.OrdinalIgnoreCase);
+    public bool IsPlayer => Roles.Contains("player", StringComparer.OrdinalIgnoreCase);
     
     /// <summary>
     /// Check if user has any of the specified roles
@@ -78,10 +64,10 @@ public class AuthorizationService
     /// <param name="req">HTTP request with Authorization header</param>
     /// <param name="requiredRoles">Required role names (user must have at least one)</param>
     /// <returns>AuthResult with user info and authorization status</returns>
-    public AuthResult ValidateAndAuthorize(HttpRequestData req, params string[] requiredRoles)
+    public async Task<AuthResult> ValidateAndAuthorizeAsync(HttpRequestData req, params string[] requiredRoles)
     {
         // First, validate the token
-        var authResult = ValidateToken(req);
+        var authResult = await ValidateTokenAsync(req);
         
         if (!authResult.IsAuthorized)
             return authResult;
@@ -93,15 +79,9 @@ public class AuthorizationService
         // Check if user has any of the required roles
         if (!authResult.HasAnyRole(requiredRoles))
         {
-            var forbiddenResponse = req.CreateResponse(HttpStatusCode.Forbidden);
-            forbiddenResponse.WriteAsJsonAsync(new ProblemDetails
-            {
-                Status = 403,
-                Title = "Access denied",
-                Detail = $"This operation requires one of the following roles: {string.Join(", ", requiredRoles)}"
-            }).GetAwaiter().GetResult();
-            
-            authResult.ErrorResponse = forbiddenResponse;
+            authResult.ErrorResponse = await req.ForbiddenAsync(
+                $"This operation requires one of the following roles: {string.Join(", ", requiredRoles)}"
+            );
         }
 
         return authResult;
@@ -112,28 +92,28 @@ public class AuthorizationService
     /// </summary>
     /// <param name="req">HTTP request with Authorization header</param>
     /// <returns>AuthResult with user info and validation status</returns>
-    public AuthResult ValidateToken(HttpRequestData req)
+    public async Task<AuthResult> ValidateTokenAsync(HttpRequestData req)
     {
         var result = new AuthResult();
 
         // Extract token from Authorization header
         if (!req.Headers.TryGetValues("Authorization", out var authHeaders))
         {
-            result.ErrorResponse = CreateUnauthorizedResponse(req, "Authorization header is required");
+            result.ErrorResponse = await req.UnauthorizedAsync("Authorization header is required");
             return result;
         }
 
         var authHeader = authHeaders.FirstOrDefault();
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
-            result.ErrorResponse = CreateUnauthorizedResponse(req, "Bearer token is required");
+            result.ErrorResponse = await req.UnauthorizedAsync("Bearer token is required");
             return result;
         }
 
         var token = authHeader.Substring("Bearer ".Length).Trim();
         if (string.IsNullOrEmpty(token))
         {
-            result.ErrorResponse = CreateUnauthorizedResponse(req, "Token is empty");
+            result.ErrorResponse = await req.UnauthorizedAsync("Token is empty");
             return result;
         }
 
@@ -141,7 +121,7 @@ public class AuthorizationService
         var (userId, roles) = _tokenService.ValidateTokenWithRoles(token);
         if (userId == null)
         {
-            result.ErrorResponse = CreateUnauthorizedResponse(req, "Invalid or expired token");
+            result.ErrorResponse = await req.UnauthorizedAsync("Invalid or expired token");
             return result;
         }
 
@@ -153,9 +133,9 @@ public class AuthorizationService
     /// <summary>
     /// Validate token and require ALL specified roles
     /// </summary>
-    public AuthResult ValidateAndRequireAllRoles(HttpRequestData req, params string[] requiredRoles)
+    public async Task<AuthResult> ValidateAndRequireAllRolesAsync(HttpRequestData req, params string[] requiredRoles)
     {
-        var authResult = ValidateToken(req);
+        var authResult = await ValidateTokenAsync(req);
         
         if (!authResult.IsAuthorized)
             return authResult;
@@ -165,32 +145,13 @@ public class AuthorizationService
 
         if (!authResult.HasAllRoles(requiredRoles))
         {
-            var forbiddenResponse = req.CreateResponse(HttpStatusCode.Forbidden);
-            forbiddenResponse.WriteAsJsonAsync(new ProblemDetails
-            {
-                Status = 403,
-                Title = "Access denied",
-                Detail = $"This operation requires all of the following roles: {string.Join(", ", requiredRoles)}"
-            }).GetAwaiter().GetResult();
-            
-            authResult.ErrorResponse = forbiddenResponse;
+            authResult.ErrorResponse = await req.ForbiddenAsync(
+                $"This operation requires all of the following roles: {string.Join(", ", requiredRoles)}"
+            );
         }
 
         return authResult;
     }
-
-    /// <summary>
-    /// Helper method to create unauthorized response
-    /// </summary>
-    private HttpResponseData CreateUnauthorizedResponse(HttpRequestData req, string detail)
-    {
-        var response = req.CreateResponse(HttpStatusCode.Unauthorized);
-        response.WriteAsJsonAsync(new ProblemDetails
-        {
-            Status = 401,
-            Title = "Unauthorized",
-            Detail = detail
-        }).GetAwaiter().GetResult();
-        return response;
-    }
 }
+
+

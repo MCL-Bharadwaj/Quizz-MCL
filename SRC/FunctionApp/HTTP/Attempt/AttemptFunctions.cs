@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Npgsql;
 using Quizz.DataAccess;
-using Quizz.DataModel.ApiModels;
+using Quizz.DataModel.Dtos;
 using Quizz.Functions.Helpers;
 using System;
 using System.Collections.Generic;
@@ -43,7 +43,7 @@ namespace Quizz.Functions.Endpoints.Attempt
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.Created,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Attempt),
+            bodyType: typeof(Quizz.DataModel.Dtos.Attempt),
             Description = "Attempt started successfully")]
         public async Task<HttpResponseData> StartAttempt(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "attempts")] HttpRequestData req)
@@ -53,7 +53,7 @@ namespace Quizz.Functions.Endpoints.Attempt
             try
             {
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: student (own attempts), tutor, admin
+                // Expected roles: player (own attempts), admin
 
                 StartAttemptRequest? request;
                 try
@@ -92,7 +92,7 @@ namespace Quizz.Functions.Endpoints.Attempt
                 }
 
                 var metadataResult = reader.IsDBNull(9) ? null : reader.GetString(9);
-                var attempt = new Quizz.DataModel.ApiModels.Attempt
+                var attempt = new Quizz.DataModel.Dtos.Attempt
                 {
                     AttemptId = reader.GetGuid(0),
                     QuizId = reader.GetGuid(1),
@@ -130,7 +130,7 @@ namespace Quizz.Functions.Endpoints.Attempt
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.OK,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Attempt),
+            bodyType: typeof(Quizz.DataModel.Dtos.Attempt),
             Description = "Successfully retrieved attempt")]
         public async Task<HttpResponseData> GetAttemptById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "attempts/{attemptId}")] HttpRequestData req,
@@ -177,7 +177,7 @@ namespace Quizz.Functions.Endpoints.Attempt
                     scorePercentage = (totalScore.Value / maxScore.Value) * 100;
                 }
 
-                var attempt = new Quizz.DataModel.ApiModels.Attempt
+                var attempt = new Quizz.DataModel.Dtos.Attempt
                 {
                     AttemptId = reader.GetGuid(0),
                     QuizId = reader.GetGuid(1),
@@ -246,7 +246,7 @@ namespace Quizz.Functions.Endpoints.Attempt
 
                 _logger.LogInformation($"Query executed. HasRows: {reader.HasRows}");
 
-                var attempts = new List<Quizz.DataModel.ApiModels.Attempt>();
+                var attempts = new List<Quizz.DataModel.Dtos.Attempt>();
                 while (await reader.ReadAsync())
                 {
                     var metadataResult = reader.IsDBNull(8) ? null : reader.GetString(8);
@@ -258,7 +258,7 @@ namespace Quizz.Functions.Endpoints.Attempt
                         scorePercentage = (totalScore.Value / maxScore.Value) * 100;
                     }
 
-                    attempts.Add(new Quizz.DataModel.ApiModels.Attempt
+                    attempts.Add(new Quizz.DataModel.Dtos.Attempt
                     {
                         AttemptId = reader.GetGuid(0),
                         QuizId = reader.GetGuid(1),
@@ -304,7 +304,7 @@ namespace Quizz.Functions.Endpoints.Attempt
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.OK,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Attempt),
+            bodyType: typeof(Quizz.DataModel.Dtos.Attempt),
             Description = "Attempt completed successfully")]
         public async Task<HttpResponseData> CompleteAttempt(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "attempts/{attemptId}/complete")] HttpRequestData req,
@@ -315,7 +315,7 @@ namespace Quizz.Functions.Endpoints.Attempt
             try
             {
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: student (own attempts), tutor, admin
+                // Expected roles: player (own attempts), admin
 
                 if (!Guid.TryParse(attemptId, out var guid))
                 {
@@ -372,7 +372,7 @@ namespace Quizz.Functions.Endpoints.Attempt
                 }
 
                 var metadataResult = reader.IsDBNull(9) ? null : reader.GetString(9);
-                var attempt = new Quizz.DataModel.ApiModels.Attempt
+                var attempt = new Quizz.DataModel.Dtos.Attempt
                 {
                     AttemptId = reader.GetGuid(0),
                     QuizId = reader.GetGuid(1),
@@ -397,3 +397,5 @@ namespace Quizz.Functions.Endpoints.Attempt
         }
     }
 }
+
+

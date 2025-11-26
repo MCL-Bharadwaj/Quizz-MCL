@@ -1,5 +1,5 @@
-using Quizz.DataModel.ApiModels;
-using Quizz.DataModel.DbModels;
+using Quizz.DataModel.Dtos;
+using Quizz.DataModel.Entities;
 
 namespace Quizz.DataModel.Extensions;
 
@@ -98,3 +98,5 @@ public static class QuestionExtensions
         db.UpdatedAt = DateTime.UtcNow;
     }
 }
+
+

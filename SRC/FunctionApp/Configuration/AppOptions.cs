@@ -24,3 +24,5 @@ public sealed class OpenApiOptions
     public string? Version { get; set; }
     public string? Description { get; set; }
 }
+
+

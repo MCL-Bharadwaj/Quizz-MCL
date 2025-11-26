@@ -5,6 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Quizz.DataAccess;
 using Quizz.Common.Services;
+using Quizz.Common.Utilities;
+using Quizz.Configuration;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -62,7 +66,7 @@ namespace Quizz.Functions
                         Console.WriteLine($"[{DateTime.UtcNow}] Registering DbService...");
                         services.AddDbService(connectionString);
 
-                        // Register TokenService for JWT generation
+                        // Register TokenService for JWT validation (token-only authorization)
                         Console.WriteLine($"[{DateTime.UtcNow}] Registering TokenService...");
                         var jwtSecret = configuration["Jwt:SecretKey"] 
                             ?? configuration["Jwt__SecretKey"]
@@ -70,9 +74,17 @@ namespace Quizz.Functions
                             ?? throw new InvalidOperationException("JWT Secret not configured");
                         services.AddSingleton(new TokenService(jwtSecret));
 
+                        // Register AuthorizationService for role-based authorization
+                        Console.WriteLine($"[{DateTime.UtcNow}] Registering AuthorizationService...");
+                        services.AddSingleton<AuthorizationService>();
+
                         Console.WriteLine($"[{DateTime.UtcNow}] Adding Application Insights...");
                         services.AddApplicationInsightsTelemetryWorkerService();
                         services.ConfigureFunctionsApplicationInsights();
+                        
+                        // Register OpenAPI configuration for Swagger
+                        Console.WriteLine($"[{DateTime.UtcNow}] Registering OpenAPI configuration...");
+                        services.AddSingleton<IOpenApiConfigurationOptions, OpenApiAuthConfiguration>();
                         
                         Console.WriteLine($"[{DateTime.UtcNow}] Service configuration completed successfully");
                     }
@@ -121,3 +133,5 @@ namespace Quizz.Functions
         }
     }
 }
+
+

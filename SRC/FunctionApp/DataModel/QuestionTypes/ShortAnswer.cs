@@ -104,3 +104,5 @@ public class KeywordMatch
     [JsonPropertyName("pointsEarned")]
     public decimal PointsEarned { get; set; }
 }
+
+

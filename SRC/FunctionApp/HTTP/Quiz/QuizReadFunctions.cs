@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 using NpgsqlTypes;
 using Quizz.DataAccess;
-using Quizz.DataModel.ApiModels;
+using Quizz.DataModel.Dtos;
 using Quizz.Functions.Helpers;
 using System;
 using System.Diagnostics;
@@ -123,10 +123,10 @@ namespace Quizz.Functions.Endpoints.Quiz
 
                 using var reader = await _dbService.ExecuteQueryAsync(sql, parameters.ToArray());
 
-                var quizzes = new System.Collections.Generic.List<Quizz.DataModel.ApiModels.Quiz>();
+                var quizzes = new System.Collections.Generic.List<Quizz.DataModel.Dtos.Quiz>();
                 while (await reader.ReadAsync())
                 {
-                    quizzes.Add(new Quizz.DataModel.ApiModels.Quiz
+                    quizzes.Add(new Quizz.DataModel.Dtos.Quiz
                     {
                         QuizId = reader.GetGuid(0),
                         Title = reader.GetString(1),
@@ -218,7 +218,7 @@ namespace Quizz.Functions.Endpoints.Quiz
                     return await ResponseHelper.NotFoundAsync(req, $"Quiz with ID '{quizId}' not found");
                 }
 
-                var quiz = new Quizz.DataModel.ApiModels.Quiz
+                var quiz = new Quizz.DataModel.Dtos.Quiz
                 {
                     QuizId = reader.GetGuid(0),
                     Title = reader.GetString(1),
@@ -246,3 +246,5 @@ namespace Quizz.Functions.Endpoints.Quiz
 
     }
 }
+
+

@@ -198,7 +198,7 @@ namespace Quizz.Functions.Endpoints.Content
                 // if (errorResponse != null) return errorResponse;
 
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: tutor, content_creator, admin
+                // Expected roles: content_creator, admin
 
                 // Upsert content - expecting request body like:
                 // { "en-US": "value1", "es-ES": "valor1" }
@@ -343,3 +343,5 @@ namespace Quizz.Functions.Endpoints.Content
         }
     }
 }
+
+

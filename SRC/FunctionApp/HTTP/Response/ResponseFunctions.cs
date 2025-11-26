@@ -7,7 +7,7 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 
 using Quizz.DataAccess;
-using Quizz.DataModel.ApiModels;
+using Quizz.DataModel.Dtos;
 using Quizz.Functions.Helpers;
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace Quizz.Functions.Endpoints.Response
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.Created,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Response),
+            bodyType: typeof(Quizz.DataModel.Dtos.Response),
             Description = "Answer submitted successfully")]
         public async Task<HttpResponseData> SubmitAnswer(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "responses")] HttpRequestData req)
@@ -60,7 +60,7 @@ namespace Quizz.Functions.Endpoints.Response
                 // if (errorResponse != null) return errorResponse;
 
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: student (own responses), tutor, admin
+                // Expected roles: student (own responses), content_creator, admin
 
                 SubmitAnswerRequest? request;
                 try
@@ -153,7 +153,7 @@ namespace Quizz.Functions.Endpoints.Response
                 var answerResult = reader.GetString(3);
                 var gradingResult = reader.IsDBNull(8) ? null : reader.GetString(8);
 
-                var response = new Quizz.DataModel.ApiModels.Response
+                var response = new Quizz.DataModel.Dtos.Response
                 {
                     ResponseId = reader.GetGuid(0),
                     AttemptId = reader.GetGuid(1),
@@ -223,7 +223,7 @@ namespace Quizz.Functions.Endpoints.Response
                 using var reader = await _dbService.ExecuteQueryAsync(sql,
                     new NpgsqlParameter("attempt_id", guid));
 
-                var responses = new List<Quizz.DataModel.ApiModels.Response>();
+                var responses = new List<Quizz.DataModel.Dtos.Response>();
                 while (await reader.ReadAsync())
                 {
                     var answerResult = reader.GetString(3);
@@ -236,7 +236,7 @@ namespace Quizz.Functions.Endpoints.Response
                         scorePercentage = (pointsEarned.Value / pointsPossible.Value) * 100;
                     }
 
-                    responses.Add(new Quizz.DataModel.ApiModels.Response
+                    responses.Add(new Quizz.DataModel.Dtos.Response
                     {
                         ResponseId = reader.GetGuid(0),
                         AttemptId = reader.GetGuid(1),
@@ -283,7 +283,7 @@ namespace Quizz.Functions.Endpoints.Response
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.OK,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Response),
+            bodyType: typeof(Quizz.DataModel.Dtos.Response),
             Description = "Successfully retrieved response")]
         public async Task<HttpResponseData> GetResponseById(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "responses/{responseId}")] HttpRequestData req,
@@ -326,7 +326,7 @@ namespace Quizz.Functions.Endpoints.Response
                     scorePercentage = (pointsEarned.Value / pointsPossible.Value) * 100;
                 }
 
-                var response = new Quizz.DataModel.ApiModels.Response
+                var response = new Quizz.DataModel.Dtos.Response
                 {
                     ResponseId = reader.GetGuid(0),
                     AttemptId = reader.GetGuid(1),
@@ -370,7 +370,7 @@ namespace Quizz.Functions.Endpoints.Response
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.OK,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Response),
+            bodyType: typeof(Quizz.DataModel.Dtos.Response),
             Description = "Response graded successfully")]
         public async Task<HttpResponseData> GradeResponse(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "responses/{responseId}/grade")] HttpRequestData req,
@@ -387,7 +387,7 @@ namespace Quizz.Functions.Endpoints.Response
                 // if (errorResponse != null) return errorResponse;
 
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: tutor, admin (grading permissions)
+                // Expected roles: content_creator, admin (grading permissions)
 
                 if (!Guid.TryParse(responseId, out var guid))
                 {
@@ -446,7 +446,7 @@ namespace Quizz.Functions.Endpoints.Response
                 var answerResult = reader.GetString(3);
                 var gradingDetailsResult = reader.IsDBNull(8) ? null : reader.GetString(8);
 
-                var response = new Quizz.DataModel.ApiModels.Response
+                var response = new Quizz.DataModel.Dtos.Response
                 {
                     ResponseId = reader.GetGuid(0),
                     AttemptId = reader.GetGuid(1),
@@ -478,14 +478,14 @@ namespace Quizz.Functions.Endpoints.Response
         }
 
         /// <summary>
-        /// Auto-grade answer by comparing student response with correct answer
+        /// Auto-grade answer by comparing player response with correct answer
         /// </summary>
-        private bool CheckAnswer(JsonElement questionContent, object studentAnswer, string questionType)
+        private bool CheckAnswer(JsonElement questionContent, object playerAnswer, string questionType)
         {
             try
             {
-                var studentAnswerJson = JsonSerializer.Serialize(studentAnswer);
-                var studentAnswerElement = JsonSerializer.Deserialize<JsonElement>(studentAnswerJson);
+                var playerAnswerJson = JsonSerializer.Serialize(playerAnswer);
+                var playerAnswerElement = JsonSerializer.Deserialize<JsonElement>(playerAnswerJson);
 
                 switch (questionType.ToLower())
                 {
@@ -494,23 +494,23 @@ namespace Quizz.Functions.Endpoints.Response
                         // Frontend sends either "a" (string) or {"selectedOptionId": "a"} (object)
                         if (questionContent.TryGetProperty("correct_answer", out var correctAnswer))
                         {
-                            string studentSelection = null;
+                            string playerSelection = null;
                             
                             // Check if it's a string first (frontend sends raw string)
-                            if (studentAnswerElement.ValueKind == JsonValueKind.String)
+                            if (playerAnswerElement.ValueKind == JsonValueKind.String)
                             {
-                                studentSelection = studentAnswerElement.GetString();
+                                playerSelection = playerAnswerElement.GetString();
                             }
                             // If it's an object, try to get the "selectedOptionId" property
-                            else if (studentAnswerElement.ValueKind == JsonValueKind.Object &&
-                                     studentAnswerElement.TryGetProperty("selectedOptionId", out var selectedOption))
+                            else if (playerAnswerElement.ValueKind == JsonValueKind.Object &&
+                                     playerAnswerElement.TryGetProperty("selectedOptionId", out var selectedOption))
                             {
-                                studentSelection = selectedOption.GetString();
+                                playerSelection = selectedOption.GetString();
                             }
                             
-                            if (studentSelection != null)
+                            if (playerSelection != null)
                             {
-                                return correctAnswer.GetString() == studentSelection;
+                                return correctAnswer.GetString() == playerSelection;
                             }
                         }
                         break;
@@ -523,13 +523,13 @@ namespace Quizz.Functions.Endpoints.Response
                             JsonElement selectedOptionsElement;
                             
                             // Check if it's already an array first (frontend sends raw array)
-                            if (studentAnswerElement.ValueKind == JsonValueKind.Array)
+                            if (playerAnswerElement.ValueKind == JsonValueKind.Array)
                             {
-                                selectedOptionsElement = studentAnswerElement;
+                                selectedOptionsElement = playerAnswerElement;
                             }
                             // If it's an object, try to get the "selectedOptionIds" property
-                            else if (studentAnswerElement.ValueKind == JsonValueKind.Object &&
-                                     studentAnswerElement.TryGetProperty("selectedOptionIds", out var selectedOptionsObj))
+                            else if (playerAnswerElement.ValueKind == JsonValueKind.Object &&
+                                     playerAnswerElement.TryGetProperty("selectedOptionIds", out var selectedOptionsObj))
                             {
                                 selectedOptionsElement = selectedOptionsObj;
                             }
@@ -542,11 +542,11 @@ namespace Quizz.Functions.Endpoints.Response
                                 .Select(x => x.GetString())
                                 .OrderBy(x => x)
                                 .ToList();
-                            var studentSet = selectedOptionsElement.EnumerateArray()
+                            var playerSet = selectedOptionsElement.EnumerateArray()
                                 .Select(x => x.GetString())
                                 .OrderBy(x => x)
                                 .ToList();
-                            return correctSet.SequenceEqual(studentSet);
+                            return correctSet.SequenceEqual(playerSet);
                         }
                         break;
 
@@ -555,24 +555,24 @@ namespace Quizz.Functions.Endpoints.Response
                         // Frontend sends either true/false (boolean) or {"answer": true/false} (object)
                         if (questionContent.TryGetProperty("correctAnswer", out var correctTF))
                         {
-                            bool? studentTFValue = null;
+                            bool? playerTFValue = null;
                             
                             // Check if it's a boolean first (frontend sends raw boolean)
-                            if (studentAnswerElement.ValueKind == JsonValueKind.True || 
-                                studentAnswerElement.ValueKind == JsonValueKind.False)
+                            if (playerAnswerElement.ValueKind == JsonValueKind.True || 
+                                playerAnswerElement.ValueKind == JsonValueKind.False)
                             {
-                                studentTFValue = studentAnswerElement.GetBoolean();
+                                playerTFValue = playerAnswerElement.GetBoolean();
                             }
                             // If it's an object, try to get the "answer" property
-                            else if (studentAnswerElement.ValueKind == JsonValueKind.Object &&
-                                     studentAnswerElement.TryGetProperty("answer", out var studentTFObj))
+                            else if (playerAnswerElement.ValueKind == JsonValueKind.Object &&
+                                     playerAnswerElement.TryGetProperty("answer", out var studentTFObj))
                             {
-                                studentTFValue = studentTFObj.GetBoolean();
+                                playerTFValue = studentTFObj.GetBoolean();
                             }
                             
-                            if (studentTFValue.HasValue)
+                            if (playerTFValue.HasValue)
                             {
-                                return correctTF.GetBoolean() == studentTFValue.Value;
+                                return correctTF.GetBoolean() == playerTFValue.Value;
                             }
                         }
                         break;
@@ -581,7 +581,7 @@ namespace Quizz.Functions.Endpoints.Response
                         // Compare pairs array
                         if ((questionContent.TryGetProperty("correctPairs", out var correctPairs) || 
                              questionContent.TryGetProperty("correct_pairs", out correctPairs)) &&
-                            studentAnswerElement.TryGetProperty("pairs", out var studentPairs))
+                            playerAnswerElement.TryGetProperty("pairs", out var playerPairs))
                         {
                             var correctPairsList = correctPairs.EnumerateArray()
                                 .Select(p => new { 
@@ -590,7 +590,7 @@ namespace Quizz.Functions.Endpoints.Response
                                 })
                                 .OrderBy(p => p.Left)
                                 .ToList();
-                            var studentPairsList = studentPairs.EnumerateArray()
+                            var playerPairsList = playerPairs.EnumerateArray()
                                 .Select(p => new { 
                                     Left = p.GetProperty("left").GetString(), 
                                     Right = p.GetProperty("right").GetString() 
@@ -598,12 +598,12 @@ namespace Quizz.Functions.Endpoints.Response
                                 .OrderBy(p => p.Left)
                                 .ToList();
                             
-                            if (correctPairsList.Count != studentPairsList.Count) return false;
+                            if (correctPairsList.Count != playerPairsList.Count) return false;
                             
                             for (int i = 0; i < correctPairsList.Count; i++)
                             {
-                                if (correctPairsList[i].Left != studentPairsList[i].Left ||
-                                    correctPairsList[i].Right != studentPairsList[i].Right)
+                                if (correctPairsList[i].Left != playerPairsList[i].Left ||
+                                    correctPairsList[i].Right != playerPairsList[i].Right)
                                 {
                                     return false;
                                 }
@@ -616,15 +616,15 @@ namespace Quizz.Functions.Endpoints.Response
                         // Compare order array
                         if ((questionContent.TryGetProperty("correctOrder", out var correctOrder) ||
                              questionContent.TryGetProperty("correct_order", out correctOrder)) &&
-                            studentAnswerElement.TryGetProperty("order", out var studentOrder))
+                            playerAnswerElement.TryGetProperty("order", out var playerOrder))
                         {
                             var correctList = correctOrder.EnumerateArray()
                                 .Select(x => x.GetString())
                                 .ToList();
-                            var studentList = studentOrder.EnumerateArray()
+                            var playerList = playerOrder.EnumerateArray()
                                 .Select(x => x.GetString())
                                 .ToList();
-                            return correctList.SequenceEqual(studentList);
+                            return correctList.SequenceEqual(playerList);
                         }
                         break;
 
@@ -633,18 +633,18 @@ namespace Quizz.Functions.Endpoints.Response
                         // Frontend sends either ["on","4","1"] (array) or {"answers": ["on","4","1"]} (object)
                         if (questionContent.TryGetProperty("blanks", out var blanks))
                         {
-                            JsonElement studentAnswersElement;
+                            JsonElement playerAnswersElement;
                             
                             // Check if it's already an array first (frontend sends raw array)
-                            if (studentAnswerElement.ValueKind == JsonValueKind.Array)
+                            if (playerAnswerElement.ValueKind == JsonValueKind.Array)
                             {
-                                studentAnswersElement = studentAnswerElement;
+                                playerAnswersElement = playerAnswerElement;
                             }
                             // If it's an object, try to get the "answers" property
-                            else if (studentAnswerElement.ValueKind == JsonValueKind.Object &&
-                                     studentAnswerElement.TryGetProperty("answers", out var answersObj))
+                            else if (playerAnswerElement.ValueKind == JsonValueKind.Object &&
+                                     playerAnswerElement.TryGetProperty("answers", out var answersObj))
                             {
-                                studentAnswersElement = answersObj;
+                                playerAnswersElement = answersObj;
                             }
                             else
                             {
@@ -652,14 +652,14 @@ namespace Quizz.Functions.Endpoints.Response
                             }
                             
                             var blanksArray = blanks.EnumerateArray().ToList();
-                            var studentAnswersArray = studentAnswersElement.EnumerateArray().ToList();
+                            var playerAnswersArray = playerAnswersElement.EnumerateArray().ToList();
                             
-                            if (blanksArray.Count != studentAnswersArray.Count) return false;
+                            if (blanksArray.Count != playerAnswersArray.Count) return false;
                             
                             for (int i = 0; i < blanksArray.Count; i++)
                             {
                                 var blank = blanksArray[i];
-                                var studentAns = studentAnswersArray[i].GetString()?.Trim().ToLower();
+                                var studentAns = playerAnswersArray[i].GetString()?.Trim().ToLower();
                                 
                                 if (blank.TryGetProperty("accepted_answers", out var acceptedAnswers))
                                 {
@@ -693,3 +693,5 @@ namespace Quizz.Functions.Endpoints.Response
         }
     }
 }
+
+

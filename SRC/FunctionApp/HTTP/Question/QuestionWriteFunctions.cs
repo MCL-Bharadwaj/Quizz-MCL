@@ -8,7 +8,7 @@ using Npgsql;
 using NpgsqlTypes;
 
 using Quizz.DataAccess;
-using Quizz.DataModel.ApiModels;
+using Quizz.DataModel.Dtos;
 using Quizz.Functions.Helpers;
 using System;
 using System.Diagnostics;
@@ -45,7 +45,7 @@ namespace Quizz.Functions.Endpoints.Question
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.Created,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Question),
+            bodyType: typeof(Quizz.DataModel.Dtos.Question),
             Description = "Question successfully created")]
         public async Task<HttpResponseData> CreateQuestion(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "questions")] HttpRequestData req)
@@ -61,7 +61,7 @@ namespace Quizz.Functions.Endpoints.Question
                 // if (errorResponse != null) return errorResponse;
 
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: tutor, content_creator, admin
+                // Expected roles: content_creator, admin
 
                 CreateQuestionRequest? request;
                 try
@@ -119,7 +119,7 @@ namespace Quizz.Functions.Endpoints.Question
                 }
 
                 var contentResult = reader.IsDBNull(13) ? "{}" : reader.GetString(13);
-                var createdQuestion = new Quizz.DataModel.ApiModels.Question
+                var createdQuestion = new Quizz.DataModel.Dtos.Question
                 {
                     QuestionId = reader.GetGuid(0),
                     QuestionType = reader.GetString(1),
@@ -189,7 +189,7 @@ namespace Quizz.Functions.Endpoints.Question
                 // if (errorResponse != null) return errorResponse;
 
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: tutor, admin
+                // Expected roles: content_creator, admin
 
                 if (!Guid.TryParse(questionId, out var guid))
                 {
@@ -263,7 +263,7 @@ namespace Quizz.Functions.Endpoints.Question
                 // if (errorResponse != null) return errorResponse;
 
                 // TODO: Add user role validation when LMS authentication is integrated
-                // Expected roles: tutor, content_creator, admin
+                // Expected roles: content_creator, admin
 
                 if (!Guid.TryParse(quizId, out var quizGuid))
                 {
@@ -404,7 +404,7 @@ namespace Quizz.Functions.Endpoints.Question
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.OK,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Question),
+            bodyType: typeof(Quizz.DataModel.Dtos.Question),
             Description = "Question successfully updated")]
         public async Task<HttpResponseData> UpdateQuestion(
             [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "questions/{questionId}")] HttpRequestData req,
@@ -487,7 +487,7 @@ namespace Quizz.Functions.Endpoints.Question
                 }
 
                 var contentResult = reader.IsDBNull(13) ? "{}" : reader.GetString(13);
-                var updatedQuestion = new Quizz.DataModel.ApiModels.Question
+                var updatedQuestion = new Quizz.DataModel.Dtos.Question
                 {
                     QuestionId = reader.GetGuid(0),
                     QuestionType = reader.GetString(1),
@@ -519,3 +519,5 @@ namespace Quizz.Functions.Endpoints.Question
         }
     }
 }
+
+

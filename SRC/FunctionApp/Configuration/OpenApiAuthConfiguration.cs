@@ -1,3 +1,4 @@
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.OpenApi.Models;
@@ -30,3 +31,5 @@ public class OpenApiAuthConfiguration : DefaultOpenApiConfigurationOptions
         new OpenApiServer { Url = "https://your-app.azurewebsites.net", Description = "Production" }
     };
 }
+
+

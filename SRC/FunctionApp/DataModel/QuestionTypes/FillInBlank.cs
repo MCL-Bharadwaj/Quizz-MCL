@@ -96,3 +96,5 @@ public class BlankResult
     [JsonPropertyName("accepted")]
     public List<string> Accepted { get; set; } = new();
 }
+
+

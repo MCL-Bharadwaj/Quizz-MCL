@@ -59,3 +59,5 @@ public class MultipleChoiceSingleGrading
     [JsonPropertyName("timeTakenSeconds")]
     public int? TimeTakenSeconds { get; set; }
 }
+
+

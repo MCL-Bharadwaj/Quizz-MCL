@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Models;
 using Npgsql;
 using NpgsqlTypes;
 using Quizz.DataAccess;
-using Quizz.DataModel.ApiModels;
+using Quizz.DataModel.Dtos;
 using Quizz.Functions.Helpers;
 using System;
 using System.Collections.Generic;
@@ -129,13 +129,13 @@ namespace Quizz.Functions.Endpoints.Question
 
                 _logger.LogInformation($"Query executed, reader created. HasRows: {reader.HasRows}");
 
-                var questions = new List<Quizz.DataModel.ApiModels.Question>();
+                var questions = new List<Quizz.DataModel.Dtos.Question>();
                 while (await reader.ReadAsync())
                 {
                     _logger.LogInformation($"Reading question row...");
                     var contentJson = reader.IsDBNull(13) ? "{}" : reader.GetString(13);
                     
-                    questions.Add(new Quizz.DataModel.ApiModels.Question
+                    questions.Add(new Quizz.DataModel.Dtos.Question
                     {
                         QuestionId = reader.GetGuid(0),
                         QuestionType = reader.GetString(1),
@@ -190,7 +190,7 @@ namespace Quizz.Functions.Endpoints.Question
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.OK,
             contentType: "application/json",
-            bodyType: typeof(Quizz.DataModel.ApiModels.Question),
+            bodyType: typeof(Quizz.DataModel.Dtos.Question),
             Description = "Successfully retrieved question")]
         [OpenApiResponseWithBody(
             statusCode: HttpStatusCode.NotFound,
@@ -228,7 +228,7 @@ namespace Quizz.Functions.Endpoints.Question
 
                 var contentJson = reader.IsDBNull(13) ? "{}" : reader.GetString(13);
 
-                var question = new Quizz.DataModel.ApiModels.Question
+                var question = new Quizz.DataModel.Dtos.Question
                 {
                     QuestionId = reader.GetGuid(0),
                     QuestionType = reader.GetString(1),
@@ -349,3 +349,5 @@ namespace Quizz.Functions.Endpoints.Question
         }
     }
 }
+
+
