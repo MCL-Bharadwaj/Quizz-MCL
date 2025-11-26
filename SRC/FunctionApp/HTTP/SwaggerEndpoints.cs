@@ -5,6 +5,7 @@ using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Visitors;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Writers;
 using Newtonsoft.Json;
 using System.Net;
 using System.Reflection;
@@ -120,7 +121,10 @@ namespace Quizz.Functions.HTTP
                 };
 
                 // Serialize to JSON
-                var json = openApiDoc.SerializeAsJson(Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0);
+                using var stringWriter = new StringWriter();
+                var jsonWriter = new OpenApiJsonWriter(stringWriter);
+                openApiDoc.SerializeAsV3(jsonWriter);
+                var json = stringWriter.ToString();
                 response.WriteString(json);
             }
             catch (Exception ex)
