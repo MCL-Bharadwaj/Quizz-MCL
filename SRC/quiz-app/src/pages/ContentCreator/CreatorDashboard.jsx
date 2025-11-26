@@ -3,20 +3,19 @@ import { useState, useEffect } from 'react';
 import { quizApi } from '../../services/api';
 import { 
   Plus, 
-  Edit, 
-  Trash2, 
   BookOpen, 
   Clock, 
   BarChart,
-  Search
+  TrendingUp,
+  FileText,
+  Users,
+  Award
 } from 'lucide-react';
 
 const CreatorDashboard = ({ isDark }) => {
   const navigate = useNavigate();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterDifficulty, setFilterDifficulty] = useState('all');
 
   useEffect(() => {
     fetchQuizzes();
@@ -34,25 +33,20 @@ const CreatorDashboard = ({ isDark }) => {
     }
   };
 
-  const handleCreateQuiz = () => {
-    navigate('/creator/quiz/create');
-  };
+  // Calculate statistics
+  const totalQuizzes = quizzes.length;
+  const easyQuizzes = quizzes.filter(q => q.difficulty?.toLowerCase() === 'easy').length;
+  const mediumQuizzes = quizzes.filter(q => q.difficulty?.toLowerCase() === 'medium').length;
+  const hardQuizzes = quizzes.filter(q => q.difficulty?.toLowerCase() === 'hard').length;
+  const totalQuestions = quizzes.reduce((sum, q) => sum + (q.questionCount || 0), 0);
+  const avgEstimatedTime = quizzes.length > 0 
+    ? Math.round(quizzes.reduce((sum, q) => sum + (q.estimatedMinutes || 0), 0) / quizzes.length)
+    : 0;
 
-  const handleEditQuiz = (quizId) => {
-    navigate(`/creator/quiz/${quizId}/questions`);
-  };
-
-  const handleDeleteQuiz = async (quizId) => {
-    if (window.confirm('Are you sure you want to delete this quiz?')) {
-      try {
-        await quizApi.deleteQuiz(quizId);
-        fetchQuizzes();
-      } catch (error) {
-        console.error('Error deleting quiz:', error);
-        alert('Failed to delete quiz');
-      }
-    }
-  };
+  // Recent quizzes (last 5)
+  const recentQuizzes = [...quizzes]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 5);
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty?.toLowerCase()) {
@@ -67,13 +61,29 @@ const CreatorDashboard = ({ isDark }) => {
     }
   };
 
-  const filteredQuizzes = quizzes.filter((quiz) => {
-    const matchesSearch = quiz.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          quiz.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDifficulty = filterDifficulty === 'all' || quiz.difficulty === filterDifficulty;
-    return matchesSearch && matchesDifficulty;
-  });
-
+  const StatCard = ({ icon: Icon, label, value, color, onClick }) => (
+    <div
+      onClick={onClick}
+      className={`
+        rounded-lg p-6 transition-all duration-300 hover:shadow-xl cursor-pointer
+        ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-2xl shadow'}
+      `}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${color}`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+      </div>
+      <div>
+        <p className={`text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          {label}
+        </p>
+        <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-8">
@@ -82,14 +92,14 @@ const CreatorDashboard = ({ isDark }) => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className={`text-4xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Quiz Management
+              Creator Dashboard
             </h1>
             <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Create and manage all quizzes
+              Overview of your quiz content
             </p>
           </div>
           <button
-            onClick={handleCreateQuiz}
+            onClick={() => navigate('/creator/quiz/create')}
             className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
           >
             <Plus className="w-5 h-5" />
@@ -98,147 +108,164 @@ const CreatorDashboard = ({ isDark }) => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className={`
-        mb-6 p-4 rounded-lg flex flex-wrap gap-4
-        ${isDark ? 'bg-gray-800' : 'bg-white shadow'}
-      `}>
-        {/* Search */}
-        <div className="flex-1 min-w-[200px]">
-          <div className="relative">
-            <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`} />
-            <input
-              type="text"
-              placeholder="Search quizzes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`
-                w-full pl-10 pr-4 py-2 rounded-lg border transition-colors
-                ${isDark 
-                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-blue-500' 
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500'
-                }
-                focus:outline-none focus:ring-2 focus:ring-blue-500/20
-              `}
-            />
-          </div>
-        </div>
-
-        {/* Difficulty Filter */}
-        <select
-          value={filterDifficulty}
-          onChange={(e) => setFilterDifficulty(e.target.value)}
-          className={`
-            px-4 py-2 rounded-lg border transition-colors
-            ${isDark 
-              ? 'bg-gray-700 border-gray-600 text-white' 
-              : 'bg-white border-gray-300 text-gray-900'
-            }
-            focus:outline-none focus:ring-2 focus:ring-blue-500/20
-          `}
-        >
-          <option value="all">All Difficulties</option>
-          <option value="easy">Easy</option>
-          <option value="medium">Medium</option>
-          <option value="hard">Hard</option>
-        </select>
-      </div>
-
-      {/* Quiz List */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      ) : filteredQuizzes.length === 0 ? (
-        <div className={`
-          text-center py-20 rounded-lg
-          ${isDark ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-600 shadow'}
-        `}>
-          <BookOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p className="text-xl font-semibold mb-2">
-            {searchQuery || filterDifficulty !== 'all' ? 'No quizzes found' : 'No quizzes yet'}
-          </p>
-          <p className="text-sm">
-            {searchQuery || filterDifficulty !== 'all' 
-              ? 'Try adjusting your filters' 
-              : 'Create your first quiz to get started'}
-          </p>
-        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredQuizzes.map((quiz) => (
-            <div
-              key={quiz.quizId}
-              className={`
-                rounded-lg p-6 transition-all duration-300 hover:shadow-xl
-                ${isDark ? 'bg-gray-800 hover:bg-gray-750' : 'bg-white hover:shadow-2xl shadow'}
-              `}
-            >
-              {/* Quiz Header */}
-              <div className="mb-4">
-                <h3 className={`text-xl font-bold mb-2 line-clamp-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  {quiz.title}
-                </h3>
-                {quiz.description && (
-                  <p className={`text-sm line-clamp-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {quiz.description}
-                  </p>
-                )}
-              </div>
+        <>
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <StatCard
+              icon={BookOpen}
+              label="Total Quizzes"
+              value={totalQuizzes}
+              color="bg-gradient-to-br from-blue-500 to-blue-600"
+              onClick={() => navigate('/creator/quizzes')}
+            />
+            <StatCard
+              icon={FileText}
+              label="Total Questions"
+              value={totalQuestions}
+              color="bg-gradient-to-br from-purple-500 to-purple-600"
+              onClick={() => navigate('/creator/quizzes')}
+            />
+            <StatCard
+              icon={Clock}
+              label="Avg. Duration"
+              value={`${avgEstimatedTime} min`}
+              color="bg-gradient-to-br from-green-500 to-green-600"
+            />
+            <StatCard
+              icon={Award}
+              label="Quiz Categories"
+              value={new Set(quizzes.map(q => q.subject).filter(Boolean)).size}
+              color="bg-gradient-to-br from-orange-500 to-orange-600"
+              onClick={() => navigate('/creator/quizzes')}
+            />
+          </div>
 
-              {/* Quiz Metadata */}
-              <div className="space-y-2 mb-4">
-                {quiz.subject && (
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="w-4 h-4 text-blue-500" />
-                    <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {quiz.subject}
-                    </span>
-                  </div>
-                )}
-                {quiz.estimatedMinutes && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-green-500" />
-                    <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {quiz.estimatedMinutes} minutes
-                    </span>
-                  </div>
-                )}
-                {quiz.difficulty && (
-                  <div className="flex items-center gap-2">
-                    <BarChart className="w-4 h-4 text-purple-500" />
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getDifficultyColor(quiz.difficulty)}`}>
-                      {quiz.difficulty}
-                    </span>
-                  </div>
-                )}
+          {/* Difficulty Distribution */}
+          <div className={`
+            rounded-lg p-6 mb-8
+            ${isDark ? 'bg-gray-800' : 'bg-white shadow'}
+          `}>
+            <h2 className={`text-2xl font-bold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              Difficulty Distribution
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className={`p-4 rounded-lg ${isDark ? 'bg-green-900/20' : 'bg-green-50'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`font-semibold ${isDark ? 'text-green-400' : 'text-green-700'}`}>
+                    Easy
+                  </span>
+                  <BarChart className="w-5 h-5 text-green-500" />
+                </div>
+                <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {easyQuizzes}
+                </p>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {totalQuizzes > 0 ? Math.round((easyQuizzes / totalQuizzes) * 100) : 0}% of total
+                </p>
               </div>
-
-              {/* Actions */}
-              <div className={`flex gap-2 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
-                <button
-                  onClick={() => handleEditQuiz(quiz.quizId)}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                >
-                  <Edit className="w-4 h-4" />
-                  <span className="text-sm font-medium">Manage</span>
-                </button>
-                <button
-                  onClick={() => handleDeleteQuiz(quiz.quizId)}
-                  className={`
-                    p-2 rounded-lg transition-colors
-                    ${isDark 
-                      ? 'bg-red-900/30 hover:bg-red-900/50 text-red-400' 
-                      : 'bg-red-100 hover:bg-red-200 text-red-700'
-                    }
-                  `}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+              <div className={`p-4 rounded-lg ${isDark ? 'bg-yellow-900/20' : 'bg-yellow-50'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`font-semibold ${isDark ? 'text-yellow-400' : 'text-yellow-700'}`}>
+                    Medium
+                  </span>
+                  <BarChart className="w-5 h-5 text-yellow-500" />
+                </div>
+                <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {mediumQuizzes}
+                </p>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {totalQuizzes > 0 ? Math.round((mediumQuizzes / totalQuizzes) * 100) : 0}% of total
+                </p>
+              </div>
+              <div className={`p-4 rounded-lg ${isDark ? 'bg-red-900/20' : 'bg-red-50'}`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className={`font-semibold ${isDark ? 'text-red-400' : 'text-red-700'}`}>
+                    Hard
+                  </span>
+                  <BarChart className="w-5 h-5 text-red-500" />
+                </div>
+                <p className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                  {hardQuizzes}
+                </p>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {totalQuizzes > 0 ? Math.round((hardQuizzes / totalQuizzes) * 100) : 0}% of total
+                </p>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+
+          {/* Recent Quizzes */}
+          <div className={`
+            rounded-lg p-6
+            ${isDark ? 'bg-gray-800' : 'bg-white shadow'}
+          `}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Recent Quizzes
+              </h2>
+              <button
+                onClick={() => navigate('/creator/quizzes')}
+                className={`text-sm font-medium ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
+              >
+                View All →
+              </button>
+            </div>
+            {recentQuizzes.length === 0 ? (
+              <div className="text-center py-8">
+                <BookOpen className={`w-12 h-12 mx-auto mb-3 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} />
+                <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                  No quizzes yet. Create your first quiz to get started!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {recentQuizzes.map((quiz) => (
+                  <div
+                    key={quiz.quizId}
+                    onClick={() => navigate(`/creator/quiz/${quiz.quizId}/questions`)}
+                    className={`
+                      p-4 rounded-lg border cursor-pointer transition-all
+                      ${isDark 
+                        ? 'border-gray-700 hover:border-gray-600 hover:bg-gray-750' 
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className={`font-semibold mb-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                          {quiz.title}
+                        </h3>
+                        <div className="flex items-center gap-4 text-sm">
+                          {quiz.subject && (
+                            <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                              📚 {quiz.subject}
+                            </span>
+                          )}
+                          {quiz.estimatedMinutes && (
+                            <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                              ⏱️ {quiz.estimatedMinutes} min
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      {quiz.difficulty && (
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${getDifficultyColor(quiz.difficulty)}`}>
+                          {quiz.difficulty}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );

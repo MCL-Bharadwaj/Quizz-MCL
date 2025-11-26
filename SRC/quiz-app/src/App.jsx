@@ -11,6 +11,7 @@ import AttemptDetails from './pages/Player/AttemptDetails';
 
 // Content Creator Pages
 import CreatorDashboard from './pages/ContentCreator/CreatorDashboard';
+import CreatorQuizzes from './pages/ContentCreator/CreatorQuizzes';
 import CreatorCreateQuiz from './pages/ContentCreator/CreatorCreateQuiz';
 import CreatorManageQuestions from './pages/ContentCreator/CreatorManageQuestions';
 
@@ -67,6 +68,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<Navigate to="/creator/dashboard" replace />} />
                 <Route path="/dashboard" element={<CreatorDashboard isDark={isDark} />} />
+                <Route path="/quizzes" element={<CreatorQuizzes isDark={isDark} />} />
                 <Route path="/quiz/create" element={<CreatorCreateQuiz isDark={isDark} />} />
                 <Route path="/quiz/:quizId/questions" element={<CreatorManageQuestions isDark={isDark} />} />
               </Routes>

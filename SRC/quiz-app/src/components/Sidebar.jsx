@@ -31,7 +31,7 @@ const Sidebar = ({ isDark, toggleTheme, role = 'Player' }) => {
     ],
     creator: [
       { icon: Home, label: 'Dashboard', path: '/creator/dashboard' },
-      { icon: BookOpen, label: 'All Quizzes', path: '/creator/dashboard' },
+      { icon: BookOpen, label: 'All Quizzes', path: '/creator/quizzes' },
       { icon: PenTool, label: 'Create Quiz', path: '/creator/quiz/create' },
     ],
   };
