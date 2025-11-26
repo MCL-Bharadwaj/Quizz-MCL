@@ -215,7 +215,7 @@ const CreatorDashboard = ({ isDark }) => {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t border-gray-700">
+              <div className={`flex gap-2 pt-4 border-t ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   onClick={() => handleEditQuiz(quiz.quizId)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
