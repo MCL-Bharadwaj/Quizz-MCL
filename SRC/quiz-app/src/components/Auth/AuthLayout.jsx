@@ -9,11 +9,11 @@ const AuthLayout = ({ children, isDark, toggleTheme, title, subtitle }) => {
         <div>
           <Link to="/" className="flex items-center gap-3">
             <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-              <span className="text-2xl font-bold text-blue-600">Q</span>
+              <span className="text-2xl font-bold text-blue-600">IQ</span>
             </div>
             <div className="text-white">
-              <h1 className="text-2xl font-bold">Quiz Platform</h1>
-              <p className="text-sm opacity-90">Learning Made Fun</p>
+              <h1 className="text-2xl font-bold">IQuizen</h1>
+              <p className="text-sm opacity-90">Learn. Play. Master.</p>
             </div>
           </Link>
         </div>
@@ -49,7 +49,7 @@ const AuthLayout = ({ children, isDark, toggleTheme, title, subtitle }) => {
         </div>
 
         <div className="text-white text-sm opacity-75">
-          © 2025 Quiz Platform. All rights reserved.
+          © 2025 IQuizen. All rights reserved.
         </div>
       </div>
 
@@ -81,10 +81,10 @@ const AuthLayout = ({ children, isDark, toggleTheme, title, subtitle }) => {
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
               isDark ? 'bg-gray-800' : 'bg-blue-600'
             }`}>
-              <span className={`text-lg font-bold ${isDark ? 'text-blue-400' : 'text-white'}`}>Q</span>
+              <span className={`text-lg font-bold ${isDark ? 'text-blue-400' : 'text-white'}`}>IQ</span>
             </div>
             <span className={`text-sm font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Quiz Platform
+              IQuizen
             </span>
           </Link>
         </div>

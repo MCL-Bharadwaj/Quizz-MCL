@@ -10,6 +10,7 @@ using Quizz.Configuration;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.Functions.Worker.Http;
 
@@ -111,19 +112,61 @@ namespace Quizz.Functions
             
             if (requestData != null)
             {
-                // Get the response
-                await next(context);
-
-                // Add CORS headers to response
-                var response = context.GetHttpResponseData();
-                if (response != null)
+                // Handle OPTIONS preflight request
+                if (requestData.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
                 {
-                    // Allow your Static Web App domain
-                    response.Headers.Add("Access-Control-Allow-Origin", "https://agreeable-sky-055d7961e.3.azurestaticapps.net");
+                    var response = requestData.CreateResponse(System.Net.HttpStatusCode.OK);
+                    
+                    // Add CORS headers
+                    var origin = requestData.Headers.Contains("Origin") 
+                        ? requestData.Headers.GetValues("Origin").FirstOrDefault() 
+                        : "*";
+                    
+                    // Allow localhost and production domain
+                    if (origin != null && (origin.StartsWith("http://localhost") || 
+                        origin.Contains("azurestaticapps.net")))
+                    {
+                        response.Headers.Add("Access-Control-Allow-Origin", origin);
+                    }
+                    else
+                    {
+                        response.Headers.Add("Access-Control-Allow-Origin", "*");
+                    }
+                    
                     response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
                     response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
                     response.Headers.Add("Access-Control-Allow-Credentials", "true");
                     response.Headers.Add("Access-Control-Max-Age", "86400");
+                    
+                    context.GetInvocationResult().Value = response;
+                    return;
+                }
+
+                // Get the response for non-OPTIONS requests
+                await next(context);
+
+                // Add CORS headers to response
+                var httpResponse = context.GetHttpResponseData();
+                if (httpResponse != null)
+                {
+                    var origin = requestData.Headers.Contains("Origin") 
+                        ? requestData.Headers.GetValues("Origin").FirstOrDefault() 
+                        : "*";
+                    
+                    // Allow localhost and production domain
+                    if (origin != null && (origin.StartsWith("http://localhost") || 
+                        origin.Contains("azurestaticapps.net")))
+                    {
+                        httpResponse.Headers.Add("Access-Control-Allow-Origin", origin);
+                    }
+                    else
+                    {
+                        httpResponse.Headers.Add("Access-Control-Allow-Origin", "*");
+                    }
+                    
+                    httpResponse.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
+                    httpResponse.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
+                    httpResponse.Headers.Add("Access-Control-Allow-Credentials", "true");
                 }
             }
             else

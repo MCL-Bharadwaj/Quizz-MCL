@@ -2,6 +2,7 @@ import axios from 'axios';
 
 // Configure the base URL for your Azure Functions API
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:7071/api';
+const AUTH_API_BASE_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:7072/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -13,17 +14,119 @@ const apiClient = axios.create({
   },
 });
 
-// Add request interceptor for adding API key if needed
+// Add request interceptor for adding API key and JWT token
 apiClient.interceptors.request.use(
   (config) => {
+    // Add JWT token to Authorization header
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    
     // If you have an API key for write operations, add it here
     const apiKey = localStorage.getItem('apiKey');
     if (apiKey && ['post', 'put', 'delete'].includes(config.method?.toLowerCase())) {
       config.headers['X-API-Key'] = apiKey;
     }
+    
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Track if we're currently refreshing to avoid multiple refresh attempts
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Add response interceptor for handling 401 errors and token refresh
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If 401 and we haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!refreshToken) {
+        // No refresh token, logout
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      try {
+        // Create a separate axios instance for refresh to avoid interceptor loop
+        const authClient = axios.create({
+          baseURL: AUTH_API_BASE_URL,
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        // Try to refresh the token
+        const response = await authClient.post('/v1/auth/refresh-token', { refreshToken });
+        
+        if (response.data?.token) {
+          const newToken = response.data.token;
+          localStorage.setItem('authToken', newToken);
+          
+          // Update refresh token if provided
+          if (response.data?.refreshToken) {
+            localStorage.setItem('refreshToken', response.data.refreshToken);
+          }
+          
+          // Update authorization header
+          apiClient.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          
+          // Process queued requests
+          processQueue(null, newToken);
+          isRefreshing = false;
+          
+          // Retry original request
+          return apiClient(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed, logout
+        processQueue(refreshError, null);
+        isRefreshing = false;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+    
     return Promise.reject(error);
   }
 );

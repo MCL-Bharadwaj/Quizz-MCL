@@ -33,9 +33,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await authApi.login(credentials);
       
-      if (response.token && response.user) {
+      // API returns: { userId, email, firstName, lastName, token, refreshToken, roles }
+      if (response.token) {
         setToken(response.token);
-        setUser(response.user);
+        
+        // Extract user data (everything except token and refreshToken)
+        const { token, refreshToken, ...userData } = response;
+        setUser(userData);
         setIsAuthenticated(true);
         
         if (rememberMe) {

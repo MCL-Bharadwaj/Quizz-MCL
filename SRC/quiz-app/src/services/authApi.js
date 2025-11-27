@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// External LMS API
-const BASE_URL = 'https://mcl-lms-dev.azurewebsites.net/api';
+// External LMS API - Use environment variable or fallback to dev server
+const BASE_URL = import.meta.env.VITE_AUTH_API_URL || 'http://localhost:7072/api';
 
 const authClient = axios.create({
   baseURL: BASE_URL,
@@ -24,16 +24,91 @@ authClient.interceptors.request.use(
   }
 );
 
-// Add response interceptor for handling errors
+// Track if we're currently refreshing to avoid multiple refresh attempts
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Add response interceptor for handling errors and token refresh
 authClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+  async (error) => {
+    const originalRequest = error.config;
+
+    // If 401 and we haven't tried to refresh yet
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        // If already refreshing, queue this request
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return authClient(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!refreshToken) {
+        // No refresh token, logout
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      try {
+        // Try to refresh the token
+        const response = await authClient.post('/v1/auth/refresh-token', { refreshToken });
+        
+        if (response.data?.token) {
+          const newToken = response.data.token;
+          localStorage.setItem('authToken', newToken);
+          
+          // Update refresh token if provided
+          if (response.data?.refreshToken) {
+            localStorage.setItem('refreshToken', response.data.refreshToken);
+          }
+          
+          // Update authorization header
+          authClient.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          
+          // Process queued requests
+          processQueue(null, newToken);
+          isRefreshing = false;
+          
+          // Retry original request
+          return authClient(originalRequest);
+        }
+      } catch (refreshError) {
+        // Refresh failed, logout
+        processQueue(refreshError, null);
+        isRefreshing = false;
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
     }
+    
     return Promise.reject(error);
   }
 );
@@ -65,17 +140,57 @@ export const authApi = {
     try {
       const response = await authClient.post('/v1/auth/login', credentials);
       
-      // Store token and user data
+      // Store token, refresh token, and user data
       if (response.data?.token) {
         localStorage.setItem('authToken', response.data.token);
-      }
-      if (response.data?.user) {
-        localStorage.setItem('user', JSON.stringify(response.data.user));
+        
+        // Store refresh token if provided
+        if (response.data?.refreshToken) {
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+        
+        // Extract user data from response (userId, email, firstName, lastName, roles)
+        const { token, refreshToken, ...userData } = response.data;
+        localStorage.setItem('user', JSON.stringify(userData));
       }
       
       return response.data;
     } catch (error) {
       console.error('Error logging in:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Refresh access token using refresh token
+   * @returns {Promise}
+   */
+  refreshToken: async () => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await authClient.post('/v1/auth/refresh-token', { refreshToken });
+      
+      // Update access token
+      if (response.data?.token) {
+        localStorage.setItem('authToken', response.data.token);
+        
+        // Update refresh token if a new one is provided
+        if (response.data?.refreshToken) {
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+        }
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error refreshing token:', error);
+      // If refresh fails, clear everything
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
       throw error;
     }
   },
@@ -146,6 +261,7 @@ export const authApi = {
    */
   logout: () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
   },
