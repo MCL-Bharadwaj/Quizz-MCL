@@ -677,6 +677,63 @@ namespace Quizz.Functions.Endpoints.Response
                         }
                         break;
 
+                    case "fill_in_blank_drag_drop":
+                        // Compare drag-drop selections (word bank IDs)
+                        // Frontend sends {"blanks": [{"position": 1, "selected_id": "op1"}, ...]}
+                        if (questionContent.TryGetProperty("blanks", out var dragDropBlanks))
+                        {
+                            JsonElement playerAnswersElement;
+                            
+                            // Get player's blanks array
+                            if (playerAnswerElement.ValueKind == JsonValueKind.Object &&
+                                playerAnswerElement.TryGetProperty("blanks", out var answersObj))
+                            {
+                                playerAnswersElement = answersObj;
+                            }
+                            else if (playerAnswerElement.ValueKind == JsonValueKind.Array)
+                            {
+                                playerAnswersElement = playerAnswerElement;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                            
+                            var blanksArray = dragDropBlanks.EnumerateArray().ToList();
+                            var playerAnswersArray = playerAnswersElement.EnumerateArray().ToList();
+                            
+                            if (blanksArray.Count != playerAnswersArray.Count) return false;
+                            
+                            for (int i = 0; i < blanksArray.Count; i++)
+                            {
+                                var blank = blanksArray[i];
+                                var studentAnswer = playerAnswersArray[i];
+                                
+                                // Get student's selected ID
+                                if (!studentAnswer.TryGetProperty("selected_id", out var selectedIdElement))
+                                    return false;
+                                
+                                var studentSelectedId = selectedIdElement.GetString()?.Trim();
+                                if (string.IsNullOrEmpty(studentSelectedId))
+                                    return false;
+                                
+                                // Check against accepted answers
+                                if (blank.TryGetProperty("accepted_answers", out var acceptedAnswers))
+                                {
+                                    var acceptedList = acceptedAnswers.EnumerateArray()
+                                        .Select(x => x.GetString()?.Trim())
+                                        .ToList();
+                                    
+                                    if (!acceptedList.Contains(studentSelectedId))
+                                    {
+                                        return false;
+                                    }
+                                }
+                            }
+                            return true;
+                        }
+                        break;
+
                     case "short_answer":
                     case "essay":
                         // These require manual grading

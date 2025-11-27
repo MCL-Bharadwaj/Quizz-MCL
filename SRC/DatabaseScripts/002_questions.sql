@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS quiz.questions (
             'multiple_choice_single',
             'multiple_choice_multi',
             'fill_in_blank',
+            'fill_in_blank_drag_drop',
             'ordering',
             'matching',
             'program_submission',
@@ -95,6 +96,21 @@ BEGIN
         content ? 'blanks' AND
         jsonb_typeof(content->'blanks') = 'array' AND
         jsonb_array_length(content->'blanks') >= 1
+    );
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+CREATE OR REPLACE FUNCTION quiz.validate_fill_blank_drag_drop_content(content JSONB)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN (
+        content ? 'template' AND
+        content ? 'blanks' AND
+        content ? 'word_bank' AND
+        jsonb_typeof(content->'blanks') = 'array' AND
+        jsonb_typeof(content->'word_bank') = 'array' AND
+        jsonb_array_length(content->'blanks') >= 1 AND
+        jsonb_array_length(content->'word_bank') >= jsonb_array_length(content->'blanks')
     );
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
@@ -156,6 +172,9 @@ COMMENT ON FUNCTION quiz.validate_mc_single_content(JSONB)
 
 COMMENT ON FUNCTION quiz.validate_fill_blank_content(JSONB)
     IS 'Validates fill_in_blank question content structure';
+
+COMMENT ON FUNCTION quiz.validate_fill_blank_drag_drop_content(JSONB)
+    IS 'Validates fill_in_blank_drag_drop question content structure';
 
 COMMENT ON FUNCTION quiz.validate_ordering_content(JSONB)
     IS 'Validates ordering question content structure';

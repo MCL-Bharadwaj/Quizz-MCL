@@ -11,6 +11,7 @@ public enum QuestionType
     MultipleChoiceSingle,
     MultipleChoiceMulti,
     FillInBlank,
+    FillInBlankDragDrop,
     Ordering,
     Matching,
     ProgramSubmission,

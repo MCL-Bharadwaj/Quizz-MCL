@@ -272,6 +272,84 @@ VALUES (
     }'::jsonb
 );
 
+-- Question 3b: Fill in the Blank with Drag & Drop (Ternary Operator)
+INSERT INTO quiz.questions (
+    question_id,
+    question_type,
+    question_text,
+    age_min,
+    age_max,
+    difficulty,
+    estimated_seconds,
+    subject,
+    locale,
+    points,
+    allow_partial_credit,
+    supports_read_aloud,
+    content
+)
+VALUES (
+    'q3b33333-3b33-3b33-3b33-33333333333b',
+    'fill_in_blank_drag_drop',
+    'Complete the ternary operator by dragging the correct operators:',
+    12, 18,
+    'medium',
+    90,
+    'programming',
+    'en-US',
+    15.0,
+    true,
+    false,
+    '{
+        "template": "result = (score ___ 60) ___ ''Pass'' : ''Fail'';",
+        "blanks": [
+            {
+                "position": 1,
+                "accepted_answers": [">="],
+                "hint": "comparison"
+            },
+            {
+                "position": 2,
+                "accepted_answers": ["?"],
+                "hint": "ternary"
+            }
+        ],
+        "word_bank": [
+            {
+                "id": "op1",
+                "text": ">=",
+                "category": "comparison"
+            },
+            {
+                "id": "op2",
+                "text": "<=",
+                "category": "comparison"
+            },
+            {
+                "id": "op3",
+                "text": ">",
+                "category": "comparison"
+            },
+            {
+                "id": "op4",
+                "text": "?",
+                "category": "ternary"
+            },
+            {
+                "id": "op5",
+                "text": ":",
+                "category": "ternary"
+            },
+            {
+                "id": "op6",
+                "text": "&&",
+                "category": "logical"
+            }
+        ],
+        "allow_reuse": false
+    }'::jsonb
+);
+
 -- Question 4: Ordering (Order the life cycle)
 INSERT INTO quiz.questions (
     question_id,

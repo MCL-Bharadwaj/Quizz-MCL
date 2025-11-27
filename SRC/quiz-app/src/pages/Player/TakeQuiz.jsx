@@ -4,6 +4,7 @@ import { Loader2, CheckCircle, XCircle, Clock, AlertCircle, ChevronRight, Chevro
 import { quizApi, attemptApi, responseApi, helpers } from '../../services/api';
 import OrderingQuestion from '../../components/QuestionTypes/OrderingQuestion';
 import MatchingQuestion from '../../components/QuestionTypes/MatchingQuestion';
+import FillInBlankDragDrop from '../../components/QuestionTypes/FillInBlankDragDrop';
 import { QuestionText } from '../../components/CodeBlock';
 
 // Helper function to shuffle array
@@ -502,6 +503,16 @@ const QuestionRenderer = ({ question, answer, onChange, isDark }) => {
     case 'ordering':
       return (
         <OrderingQuestion
+          question={question}
+          answer={answer}
+          onChange={onChange}
+          isDark={isDark}
+        />
+      );
+
+    case 'fill_in_blank_drag_drop':
+      return (
+        <FillInBlankDragDrop
           question={question}
           answer={answer}
           onChange={onChange}

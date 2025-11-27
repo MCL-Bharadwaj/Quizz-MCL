@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Sidebar from './components/Sidebar';
+import ResponsiveLayout from './components/ResponsiveLayout';
 
 // Auth Pages
 import LoginPage from './pages/Auth/LoginPage';
@@ -67,9 +67,8 @@ function App() {
           {/* Player ROUTES (Protected) */}
           <Route path="/Player/*" element={
             <ProtectedRoute>
-              <div className={`flex h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-                <Sidebar isDark={isDark} toggleTheme={toggleTheme} role="Player" />
-                <main className="flex-1 overflow-auto">
+              <div className={isDark ? 'bg-gray-950' : 'bg-gray-50'}>
+                <ResponsiveLayout isDark={isDark} toggleTheme={toggleTheme} role="Player">
                   <Routes>
                     <Route path="/" element={<Navigate to="/Player/dashboard" replace />} />
                     <Route path="/dashboard" element={<PlayerDashboard isDark={isDark} />} />
@@ -78,7 +77,7 @@ function App() {
                     <Route path="/attempts" element={<PlayerAttempts isDark={isDark} />} />
                     <Route path="/attempt/:attemptId" element={<AttemptDetails isDark={isDark} />} />
                   </Routes>
-                </main>
+                </ResponsiveLayout>
               </div>
             </ProtectedRoute>
           } />
@@ -86,9 +85,8 @@ function App() {
           {/* Content Creator ROUTES (Protected) */}
           <Route path="/creator/*" element={
             <ProtectedRoute>
-              <div className={`flex h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
-                <Sidebar isDark={isDark} toggleTheme={toggleTheme} role="creator" />
-                <main className="flex-1 overflow-auto">
+              <div className={isDark ? 'bg-gray-950' : 'bg-gray-50'}>
+                <ResponsiveLayout isDark={isDark} toggleTheme={toggleTheme} role="creator">
                   <Routes>
                     <Route path="/" element={<Navigate to="/creator/dashboard" replace />} />
                     <Route path="/dashboard" element={<CreatorDashboard isDark={isDark} />} />
@@ -96,7 +94,7 @@ function App() {
                     <Route path="/quiz/create" element={<CreatorCreateQuiz isDark={isDark} />} />
                     <Route path="/quiz/:quizId/questions" element={<CreatorManageQuestions isDark={isDark} />} />
                   </Routes>
-                </main>
+                </ResponsiveLayout>
               </div>
             </ProtectedRoute>
           } />

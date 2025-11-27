@@ -79,6 +79,7 @@ const CreatorManageQuestions = ({ isDark }) => {
       multiple_choice_single: 'Multiple Choice (Single)',
       multiple_choice_multi: 'Multiple Choice (Multi)',
       fill_in_blank: 'Fill in the Blank',
+      fill_in_blank_drag_drop: 'Fill in Blank (Drag & Drop)',
       ordering: 'Ordering',
       matching: 'Matching',
       program_submission: 'Program Submission',
@@ -407,6 +408,7 @@ const QuestionForm = ({ quizId, question, isDark, onClose, onSave }) => {
               <option value="multiple_choice_single">Multiple Choice (Single Answer)</option>
               <option value="multiple_choice_multi">Multiple Choice (Multiple Answers)</option>
               <option value="fill_in_blank">Fill in the Blank</option>
+              <option value="fill_in_blank_drag_drop">Fill in Blank (Drag & Drop)</option>
               <option value="ordering">Ordering</option>
               <option value="matching">Matching</option>
               <option value="program_submission">Program Submission</option>

@@ -89,22 +89,13 @@ const CreatorDashboard = ({ isDark }) => {
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className={`text-4xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              Creator Dashboard
-            </h1>
-            <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              Overview of your quiz content
-            </p>
-          </div>
-          <button
-            onClick={() => navigate('/creator/quiz/create')}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl"
-          >
-            <Plus className="w-5 h-5" />
-            <span className="font-semibold">Create New Quiz</span>
-          </button>
+        <div>
+          <h1 className={`text-4xl font-bold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Creator Dashboard
+          </h1>
+          <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            Overview of your quiz content
+          </p>
         </div>
       </div>
 
